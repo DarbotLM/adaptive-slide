@@ -15,6 +15,7 @@ Adaptive Slide is a presentation format built on the [Adaptive Cards](https://ad
 | [Architecture](Architecture.md) | System design, data model, and rendering pipeline |
 | [Schema Reference](Schema-Reference.md) | Complete reference for all schemas and tile types |
 | [Getting Started](Getting-Started.md) | Build your first deck in 5 minutes |
+| [MCP App Plugin](MCP-App-Plugin.md) | Render decks as interactive MCP Apps |
 
 ## Quick Links
 

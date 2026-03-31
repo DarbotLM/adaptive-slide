@@ -28,7 +28,52 @@ Deck (Presentation)
 ```bash
 npm install
 npm run validate   # validate example decks against schemas
+npm run build      # compile TypeScript + bundle viewer
+npm run serve      # start MCP App server on :3001
 ```
+
+## MCP App Plugin
+
+Adaptive Slide includes an MCP App plugin that transforms deck JSON into interactive presentations rendered inside MCP hosts (Claude Desktop, VS Code Copilot, etc.).
+
+### How It Works
+
+```
+Deck JSON ──▶ present-deck tool ──▶ MCP Host ──▶ Viewer (sandboxed iframe)
+```
+
+1. The MCP server registers a `present-deck` tool with a `ui://` resource URI
+2. When called, the host fetches the self-contained viewer HTML
+3. The viewer receives deck JSON via the MCP App postMessage protocol
+4. Slides render with full navigation, keyboard shortcuts, and theming
+
+### Running the Server
+
+```bash
+# Development (with tsx)
+npm run dev
+
+# Production
+npm run build && npm run serve
+
+# Custom port
+PORT=8080 npm run serve
+```
+
+### Connecting to Claude Desktop
+
+```bash
+# Tunnel local server for Claude
+npx cloudflared tunnel --url http://localhost:3001
+# Then add the tunnel URL as a custom connector in Claude
+```
+
+### Tools
+
+| Tool | Description |
+|------|-------------|
+| `present-deck` | Renders a deck as an interactive MCP App |
+| `list-slides` | Returns slide metadata (titles, IDs) |
 
 See [`examples/hello-world.deck.json`](examples/hello-world.deck.json) for a working example.
 
@@ -50,6 +95,7 @@ All schemas live in `schemas/` and follow [JSON Schema Draft 2020-12](https://js
 - [Wiki: Architecture](docs/wiki/Architecture.md)
 - [Wiki: Schema Reference](docs/wiki/Schema-Reference.md)
 - [Wiki: Getting Started](docs/wiki/Getting-Started.md)
+- [Wiki: MCP App Plugin](docs/wiki/MCP-App-Plugin.md)
 
 ## License
 

@@ -272,7 +272,38 @@ Themes support `additionalProperties: true`, allowing host-specific theming:
 
 ---
 
-## 9. Future Considerations
+## 9. MCP App Plugin
+
+Adaptive Slide includes an MCP App plugin that serves decks as interactive presentations inside MCP-compatible hosts (Claude Desktop, VS Code Copilot, etc.).
+
+### 9.1 Plugin Architecture
+
+```
+┌─────────────┐     ┌──────────────┐     ┌───────────────┐     ┌──────────────┐
+│  .deck.json │ ──▶ │  MCP Server  │ ──▶ │   MCP Host    │ ──▶ │ Viewer App   │
+│   (input)   │     │ present-deck │     │ (Claude, etc) │     │ (iframe)     │
+│             │     │ list-slides  │     │               │     │              │
+└─────────────┘     └──────────────┘     └───────────────┘     └──────────────┘
+```
+
+### 9.2 Tools
+
+| Tool | Description | Input |
+|------|-------------|-------|
+| `present-deck` | Render deck as interactive MCP App | `deck`: JSON string |
+| `list-slides` | Return slide metadata | `deck`: JSON string |
+
+### 9.3 Viewer
+
+The viewer is a self-contained HTML page implementing the MCP App postMessage protocol. It receives deck JSON from the host and renders it with full navigation, keyboard shortcuts, theme support, and all 6 tile types.
+
+### 9.4 Transport
+
+The server uses StreamableHTTPServerTransport over Express, serving on `/mcp`. Compatible with any MCP client that supports HTTP transport.
+
+---
+
+## 10. Future Considerations
 
 - **Animations:** Per-tile entry/exit animations
 - **Data binding:** Template expressions for dynamic content
