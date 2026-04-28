@@ -32,7 +32,7 @@ for (const schema of schemas) {
 
 const deckSchema = schemas.find((s) => s.title === "Adaptive Slide Deck");
 if (!deckSchema) {
-  console.error("❌ Could not find deck schema");
+  console.error("ERROR: Could not find deck schema");
   process.exit(1);
 }
 
@@ -47,12 +47,12 @@ for (const file of examples) {
   const deck = loadJson(join(EXAMPLES_DIR, file));
   const valid = validate(deck);
   if (valid) {
-    console.log(`✅ ${file}`);
+    console.log(`PASS: ${file}`);
     passed++;
   } else {
-    console.log(`❌ ${file}`);
+    console.log(`FAIL: ${file}`);
     for (const err of validate.errors) {
-      console.log(`   ${err.instancePath || "/"} — ${err.message}`);
+      console.log(`   ${err.instancePath || "/"} - ${err.message}`);
     }
     failed++;
   }

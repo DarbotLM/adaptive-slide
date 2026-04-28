@@ -90,6 +90,7 @@ All schemas live in `schemas/` and follow [JSON Schema Draft 2020-12](https://js
 
 ## Documentation
 
+- [Published Docusaurus site](https://darbotlm.github.io/adaptive-slide/)
 - [Technical Specification](docs/spec/technical-specification.md)
 - [Wiki: Home](docs/wiki/Home.md)
 - [Wiki: Architecture](docs/wiki/Architecture.md)
