@@ -299,8 +299,9 @@ function slideBodyToElements(slide) {
     rows.set(row, list);
   }
   const elements = orphans.map(tileToElement).filter(Boolean);
-  for (const rowKey of [...rows.keys()].sort((a, b) => a - b)) {
-    const cells = rows.get(rowKey).slice().sort((a, b) => a.column - b.column);
+  const sortedRowKeys = Array.from(rows.keys()).sort((a, b) => a - b);
+  for (const rowKey of sortedRowKeys) {
+    const cells = Array.from(rows.get(rowKey)).sort((a, b) => a.column - b.column);
 
     // If the row is a single full-width tile, render it as a top-level element.
     if (cells.length === 1 && cells[0].span >= totalColumns) {

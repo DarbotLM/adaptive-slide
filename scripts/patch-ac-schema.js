@@ -1,12 +1,41 @@
-// Adds the CodeBlock element definition to the AC 1.6 schema.
-// CodeBlock ships with Adaptive Cards 1.6 (per Microsoft docs) but the
-// published JSON schema at adaptivecards.io/schemas/1.6.0 omits it.
+// One-time patches applied to the official Adaptive Cards 1.6 JSON schema
+// downloaded from microsoft/AdaptiveCards. The patched schema is committed to
+// the repo (schemas/adaptive-card-1.6.schema.json); rerun this only when
+// pulling a newer version of the source schema.
+//
+// Patches:
+//   1. Rename JSON Schema Draft-06 `id` keyword to `$id` so AJV (Draft-07+) compiles it.
+//   2. Strip invalid `"required": false` clauses (must be array of strings).
+//   3. Add the CodeBlock element definition (officially part of AC 1.6 per
+//      Microsoft docs but absent from the published schema).
 
 import { readFileSync, writeFileSync } from "node:fs";
 
 const path = "schemas/adaptive-card-1.6.schema.json";
-const schema = JSON.parse(readFileSync(path, "utf8"));
+let raw = readFileSync(path, "utf8");
 
+// 1. Replace top-level `"id": "..."` with `"$id": "..."`.
+raw = raw.replace(/"id":\s*"/g, '"$id": "');
+
+const schema = JSON.parse(raw);
+
+// 2. Strip invalid `required: <boolean>` entries.
+let strippedRequired = 0;
+function walkStrip(node) {
+  if (!node || typeof node !== "object") return;
+  if (Array.isArray(node)) {
+    node.forEach(walkStrip);
+    return;
+  }
+  if (Object.prototype.hasOwnProperty.call(node, "required") && typeof node.required === "boolean") {
+    delete node.required;
+    strippedRequired += 1;
+  }
+  for (const value of Object.values(node)) walkStrip(value);
+}
+walkStrip(schema);
+
+// 3. Add CodeBlock to definitions and the Element union.
 const codeBlockDefinition = {
   description:
     "Displays a block of source code with optional syntax highlighting and line numbers. Added in Adaptive Cards 1.5; carried forward in 1.6.",
@@ -14,10 +43,7 @@ const codeBlockDefinition = {
   required: ["type", "codeSnippet"],
   properties: {
     type: { type: "string", enum: ["CodeBlock"] },
-    codeSnippet: {
-      type: "string",
-      description: "The source code snippet to display.",
-    },
+    codeSnippet: { type: "string" },
     language: {
       type: "string",
       enum: [
@@ -30,10 +56,7 @@ const codeBlockDefinition = {
       ],
       default: "PlainText",
     },
-    startLineNumber: {
-      type: "integer",
-      description: "Optional starting line number to display next to the snippet.",
-    },
+    startLineNumber: { type: "integer" },
     fallback: {
       anyOf: [
         { $ref: "#/definitions/ImplementationsOf.Element" },
@@ -51,39 +74,38 @@ const codeBlockDefinition = {
     requires: { type: "object", additionalProperties: { type: "string" } },
     grid: {
       type: "object",
-      properties: {
-        area: { type: "string" },
-      },
+      properties: { area: { type: "string" } },
     },
     targetWidth: { type: "string" },
   },
   additionalProperties: false,
 };
 
+let addedCodeBlock = false;
 if (!schema.definitions.CodeBlock) {
   schema.definitions.CodeBlock = codeBlockDefinition;
-  console.log("added CodeBlock definition");
-} else {
-  console.log("CodeBlock definition already present");
+  addedCodeBlock = true;
 }
 
-// Add to the ImplementationsOf.Element union if not already.
 const elementUnion = schema.definitions["ImplementationsOf.Element"];
+let addedToUnion = false;
 if (elementUnion?.anyOf) {
   const has = elementUnion.anyOf.some(
-    (entry) =>
-      entry.allOf?.some((member) => member.$ref === "#/definitions/CodeBlock"),
+    (entry) => entry.allOf?.some((m) => m.$ref === "#/definitions/CodeBlock"),
   );
   if (!has) {
     elementUnion.anyOf.push({
       required: ["type"],
       allOf: [{ $ref: "#/definitions/CodeBlock" }],
     });
-    console.log("added CodeBlock to ImplementationsOf.Element");
-  } else {
-    console.log("CodeBlock already in element union");
+    addedToUnion = true;
   }
 }
 
 writeFileSync(path, JSON.stringify(schema, null, 2));
-console.log("schema definitions:", Object.keys(schema.definitions).length);
+
+console.log(`renamed id -> $id`);
+console.log(`stripped ${strippedRequired} invalid required:false entries`);
+console.log(`CodeBlock definition: ${addedCodeBlock ? "added" : "already present"}`);
+console.log(`CodeBlock in element union: ${addedToUnion ? "added" : "already present"}`);
+console.log(`schema definitions: ${Object.keys(schema.definitions).length}`);
