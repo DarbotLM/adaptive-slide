@@ -41,7 +41,8 @@
 }
 
 .sectionHeader,
-.previewHeader {
+.previewHeader,
+.schemaHeader {
   align-items: end;
   display: flex;
   gap: 1.5rem;
@@ -71,53 +72,306 @@
 }
 
 .templateGrid {
+  align-items: stretch;
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  overflow: visible;
 }
 
-.templateCard {
+.flipCard {
+  min-height: 660px;
+  perspective: 1600px;
+  position: relative;
+}
+
+.flipCardInner {
+  display: grid;
+  min-height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 260ms ease;
+}
+
+.flipCardFlipped {
+  transform: rotateY(180deg);
+}
+
+.flipFace {
+  backface-visibility: hidden;
   background: var(--ifm-card-background-color);
   border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: 18px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.14);
-  color: inherit;
-  cursor: pointer;
-  display: grid;
-  gap: 0.6rem;
+  border-radius: 22px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  grid-area: 1 / 1;
+  justify-content: space-between;
+  min-height: 660px;
+  overflow: visible;
   padding: 1.25rem;
-  text-align: left;
 }
 
-.templateCard strong {
-  color: var(--ifm-heading-color);
-  font-size: 1.15rem;
+.flipBack {
+  transform: rotateY(180deg);
 }
 
-.templateCard p,
-.templateCard span:last-child,
+.selectedCard .flipFace {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 2px rgba(80, 230, 255, 0.2), 0 18px 45px rgba(0, 0, 0, 0.16);
+}
+
+.flipFaceContent {
+  display: grid;
+  gap: 1rem;
+}
+
+.templateSummary {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.templateSummary h3 {
+  margin: 0;
+}
+
+.templateSummary p,
+.templateSummary span:last-child,
 .note {
   color: var(--ifm-color-emphasis-700);
   margin: 0;
 }
 
-.selectedCard {
-  border-color: var(--ifm-color-primary);
-  box-shadow: 0 0 0 2px rgba(80, 230, 255, 0.2);
-}
-
 .cardMeta {
   color: var(--ifm-color-primary);
+  display: block;
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
+.cardActions,
+.previewActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.adaptiveCard {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 22px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 18px 42px rgba(0, 0, 0, 0.22);
+  color: #ffffff;
+  display: grid;
+  gap: 1rem;
+  min-height: 360px;
+  overflow: visible;
+  padding: 1rem;
+}
+
+.adaptiveCardCompact {
+  min-height: 300px;
+}
+
+.cardChrome {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.cardChrome span {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: #d7ecff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.35rem 0.65rem;
+}
+
+.slideCanvas {
+  align-content: center;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.tile {
+  border-radius: 14px;
+}
+
+.tileText {
+  line-height: 1.45;
+}
+
+.tileTextHeading {
+  font-size: clamp(1.65rem, 4vw, 2.85rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-align: center;
+}
+
+.tileTextSubheading {
+  color: #d7ecff;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.tileTextBody {
+  color: #eef7ff;
+  font-size: 0.96rem;
+}
+
+.tileTextCaption {
+  color: #b8d7f0;
+  font-size: 0.82rem;
+}
+
+.tileTextQuote {
+  border-left: 3px solid #50e6ff;
+  color: #d7ecff;
+  padding-left: 0.85rem;
+}
+
+.tileTextLight {
+  color: #ffffff;
+}
+
+.tileTextAccent {
+  color: #50e6ff;
+}
+
+.tileTextGood {
+  color: #8ee6a8;
+}
+
+.tileTextWarning {
+  color: #ffd166;
+}
+
+.tileTextAttention {
+  color: #ff8fa3;
+}
+
+.tileList {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.tileContainer {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.8rem;
+}
+
+.tileContainerDepth1 {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tileContainerDepth2 {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tileChart {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem;
+}
+
+.chartBars {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.chartBarRow {
+  align-items: center;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 4.5rem 1fr 2rem;
+}
+
+.chartBarRow span,
+.chartBarRow b {
+  color: #d7ecff;
+  font-size: 0.78rem;
+}
+
+.chartTrack {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  height: 0.65rem;
+  overflow: hidden;
+}
+
+.chartFill {
+  background: linear-gradient(90deg, #50e6ff, #0f6cbd);
+  border-radius: 999px;
+  height: 100%;
+}
+
+.tileCode {
+  background: rgba(0, 0, 0, 0.28);
+  color: #d7ecff;
+  margin: 0;
+  overflow: auto;
+  padding: 0.8rem;
+}
+
+.tileImage {
+  margin: 0;
+}
+
+.tileImage img {
+  border-radius: 14px;
+  display: block;
+  max-width: 100%;
+}
+
+.tileImage figcaption {
+  color: #d7ecff;
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+}
+
+.schemaHeader {
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.schemaHeader strong {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.schemaPreview,
+.deckPreview {
+  background: #020817;
+  border: 1px solid rgba(80, 230, 255, 0.18);
+  border-radius: 16px;
+  color: #d7ecff;
+  margin: 0;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.schemaPreview {
+  flex: 1 1 auto;
+  max-height: 455px;
+  min-height: 360px;
+}
+
 .workspace {
   display: grid;
   gap: 1.25rem;
-  grid-template-columns: 0.85fr 1.15fr;
+  grid-template-columns: 0.82fr 1.18fr;
   padding-top: 0;
 }
 
@@ -145,7 +399,7 @@
 .error {
   color: var(--ifm-color-danger);
   font-weight: 700;
-  margin: 0;
+  margin: 1rem 0 0;
 }
 
 .deckStats {
@@ -175,9 +429,7 @@
 }
 
 .deckPreview {
-  border-radius: 16px;
   max-height: 620px;
-  overflow: auto;
 }
 
 @media screen and (max-width: 996px) {
@@ -187,8 +439,14 @@
   }
 
   .sectionHeader,
-  .previewHeader {
+  .previewHeader,
+  .schemaHeader {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .flipCard,
+  .flipFace {
+    min-height: 700px;
   }
 }
