@@ -6,8 +6,10 @@ const commitMessage = [
   "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>",
 ].join("\n");
 
-run("npm", ["run", "docs:build"]);
-run("npx", [
+runNpm(["run", "docs:build"]);
+runNpm([
+  "exec",
+  "--",
   "gh-pages",
   "-d",
   "website/build",
@@ -17,9 +19,13 @@ run("npx", [
   commitMessage,
 ]);
 
-function run(command, args) {
-  const executable = process.platform === "win32" ? `${command}.cmd` : command;
-  const result = spawnSync(executable, args, { stdio: "inherit" });
+function runNpm(args) {
+  const npmCli = process.env.npm_execpath;
+  if (!npmCli) {
+    throw new Error("Run this script with npm so npm_execpath is available.");
+  }
+
+  const result = spawnSync(process.execPath, [npmCli, ...args], { stdio: "inherit" });
 
   if (result.error) {
     throw result.error;
