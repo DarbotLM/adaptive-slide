@@ -1,62 +1,101 @@
+/* =====================================================================
+   Hero
+   ===================================================================== */
+
 .hero {
   background:
-    radial-gradient(circle at 12% 12%, rgba(80, 230, 255, 0.22), transparent 26%),
-    radial-gradient(circle at 85% 12%, rgba(15, 108, 189, 0.35), transparent 32%),
-    linear-gradient(135deg, #020817 0%, #071a2f 54%, #0d3a66 100%);
+    radial-gradient(circle at 12% 12%, rgba(80, 230, 255, 0.22), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(167, 139, 250, 0.22), transparent 32%),
+    linear-gradient(135deg, #020817 0%, #071a2f 56%, #0d3a66 100%);
   color: #ffffff;
-  padding: 5.5rem 0 4rem;
+  padding: 4.5rem 0 3rem;
 }
 
 .eyebrow {
   color: #50e6ff;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  margin-bottom: 0.75rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.7rem;
   text-transform: uppercase;
 }
 
 .heroTitle {
   color: #ffffff;
-  font-size: clamp(2.4rem, 5vw, 4.8rem);
-  line-height: 1;
-  max-width: 980px;
+  font-size: clamp(2rem, 3.4vw, 3.2rem);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+  max-width: 920px;
 }
 
 .heroSubtitle {
   color: #d7ecff;
-  font-size: 1.18rem;
-  line-height: 1.65;
-  margin-top: 1.25rem;
-  max-width: 820px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 1.1rem 0 0;
+  max-width: 760px;
 }
+
+.heroStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  margin-top: 1.75rem;
+}
+
+.heroStats span {
+  color: #d7ecff;
+  font-size: 0.9rem;
+}
+
+.heroStats strong {
+  color: #50e6ff;
+  font-size: 1.45rem;
+  font-weight: 800;
+  display: block;
+}
+
+/* =====================================================================
+   Layout
+   ===================================================================== */
 
 .main {
   background: var(--ifm-background-color);
 }
 
-.librarySection,
+.librarySection {
+  padding: 3.5rem 0 1.5rem;
+}
+
 .workspace {
-  padding: 4rem 0;
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 0.8fr 1.2fr;
+  padding: 2rem 0 4rem;
 }
 
 .sectionHeader,
-.previewHeader,
-.schemaHeader {
+.previewHeader {
   align-items: end;
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1.25rem;
   justify-content: space-between;
   margin-bottom: 1.5rem;
 }
 
-.filterLabel,
-.uploadBox label,
-.generatorForm label {
+.sectionTitle {
+  margin: 0;
+  font-size: 1.85rem;
+}
+
+.filterLabel {
   color: var(--ifm-color-emphasis-800);
   display: grid;
   font-weight: 700;
-  gap: 0.5rem;
+  font-size: 0.85rem;
+  gap: 0.4rem;
 }
 
 .filterLabel select,
@@ -68,326 +107,509 @@
   border-radius: 12px;
   color: var(--ifm-font-color-base);
   font: inherit;
-  padding: 0.8rem 0.95rem;
+  padding: 0.7rem 0.9rem;
+  min-width: 180px;
 }
 
+/* =====================================================================
+   Template grid + flip card
+   ===================================================================== */
+
 .templateGrid {
-  align-items: stretch;
   display: grid;
   gap: 1.25rem;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  overflow: visible;
+  /* Auto-fill responsive grid: 1 col below ~720px, 2 cols 720-1080, 3 cols 1080+ */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  width: 100%;
+  min-width: 0;
 }
 
 .flipCard {
-  min-height: 660px;
   perspective: 1600px;
-  position: relative;
+  min-width: 0;
 }
 
-.flipCardInner {
+.flipInner {
   display: grid;
-  min-height: 100%;
+  min-height: 530px;
+  position: relative;
   transform-style: preserve-3d;
-  transition: transform 260ms ease;
+  transition: transform 480ms cubic-bezier(0.4, 0.1, 0.3, 1);
+  width: 100%;
 }
 
-.flipCardFlipped {
+.flipped {
   transform: rotateY(180deg);
 }
 
-.flipFace {
+.face {
   backface-visibility: hidden;
   background: var(--ifm-card-background-color);
   border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: 22px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.16);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
   grid-area: 1 / 1;
-  justify-content: space-between;
-  min-height: 660px;
-  overflow: visible;
-  padding: 1.25rem;
+  min-height: 530px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 1.1rem;
 }
 
-.flipBack {
+.faceBack {
   transform: rotateY(180deg);
 }
 
-.selectedCard .flipFace {
+.selectedCard .face {
   border-color: var(--ifm-color-primary);
-  box-shadow: 0 0 0 2px rgba(80, 230, 255, 0.2), 0 18px 45px rgba(0, 0, 0, 0.16);
+  box-shadow:
+    0 0 0 2px rgba(80, 230, 255, 0.25),
+    0 20px 50px rgba(0, 0, 0, 0.18);
 }
 
-.flipFaceContent {
-  display: grid;
-  gap: 1rem;
-}
-
-.templateSummary {
-  display: grid;
-  gap: 0.55rem;
-}
-
-.templateSummary h3 {
-  margin: 0;
-}
-
-.templateSummary p,
-.templateSummary span:last-child,
-.note {
-  color: var(--ifm-color-emphasis-700);
-  margin: 0;
-}
-
-.cardMeta {
-  color: var(--ifm-color-primary);
-  display: block;
-  font-size: 0.8rem;
+.cardHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.cardActions,
-.previewActions {
+.cardCategory {
+  color: var(--ifm-color-primary);
+}
+
+.cardSlideCount {
+  color: var(--ifm-color-emphasis-700);
+}
+
+.cardMeta {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.cardTitle {
+  color: var(--ifm-heading-color);
+  font-size: 1.1rem;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.cardSummary {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.83rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.cardTags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
 }
 
-.adaptiveCard {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 22px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 18px 42px rgba(0, 0, 0, 0.22);
-  color: #ffffff;
-  display: grid;
-  gap: 1rem;
-  min-height: 360px;
-  overflow: visible;
-  padding: 1rem;
-}
-
-.adaptiveCardCompact {
-  min-height: 300px;
-}
-
-.cardChrome {
-  align-items: center;
-  display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-}
-
-.cardChrome span {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+.cardTag {
+  background: var(--ifm-color-emphasis-100);
+  border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 999px;
-  color: #d7ecff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding: 0.35rem 0.65rem;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.55rem;
+  text-transform: lowercase;
 }
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+/* =====================================================================
+   Slide canvas (rendered AdaptiveDeck preview)
+   ===================================================================== */
 
 .slideCanvas {
-  align-content: center;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.tile {
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 14px;
-}
-
-.tileText {
-  line-height: 1.45;
-}
-
-.tileTextHeading {
-  font-size: clamp(1.65rem, 4vw, 2.85rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  text-align: center;
-}
-
-.tileTextSubheading {
-  color: #d7ecff;
-  font-size: 1rem;
-  font-weight: 700;
-  text-align: center;
-}
-
-.tileTextBody {
-  color: #eef7ff;
-  font-size: 0.96rem;
-}
-
-.tileTextCaption {
-  color: #b8d7f0;
-  font-size: 0.82rem;
-}
-
-.tileTextQuote {
-  border-left: 3px solid #50e6ff;
-  color: #d7ecff;
-  padding-left: 0.85rem;
-}
-
-.tileTextLight {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   color: #ffffff;
-}
-
-.tileTextAccent {
-  color: #50e6ff;
-}
-
-.tileTextGood {
-  color: #8ee6a8;
-}
-
-.tileTextWarning {
-  color: #ffd166;
-}
-
-.tileTextAttention {
-  color: #ff8fa3;
-}
-
-.tileList {
-  display: grid;
-  gap: 0.45rem;
-  margin: 0;
-  padding-left: 1.1rem;
-}
-
-.tileContainer {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  display: grid;
-  gap: 0.4rem;
-  padding: 0.8rem;
-}
-
-.tileContainerDepth1 {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.tileContainerDepth2 {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.tileChart {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  display: grid;
-  gap: 0.65rem;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
   padding: 0.85rem;
+  position: relative;
+  width: 100%;
 }
 
-.chartBars {
-  display: grid;
-  gap: 0.4rem;
+.slideCanvasCompact {
+  min-height: 240px;
+  padding: 0.7rem;
 }
 
-.chartBarRow {
-  align-items: center;
-  display: grid;
-  gap: 0.5rem;
-  grid-template-columns: 4.5rem 1fr 2rem;
+.slideInner {
+  align-content: start;
+  height: 100%;
+  min-width: 0;
+  width: 100%;
 }
 
-.chartBarRow span,
-.chartBarRow b {
-  color: #d7ecff;
+.slideInner > * {
+  min-width: 0;
+}
+
+/* =====================================================================
+   Tile typography
+   ===================================================================== */
+
+.textTile {
+  line-height: 1.35;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.textHeading {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.textSubheading {
+  color: #c7e2f7;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.textBody {
+  color: #e6f1fb;
   font-size: 0.78rem;
 }
 
+.textCaption {
+  color: #b8d2ea;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+}
+
+.textQuote {
+  border-left: 3px solid #50e6ff;
+  color: #d7ecff;
+  font-style: italic;
+  padding-left: 0.7rem;
+}
+
+.sizeSmall {
+  font-size: 0.72rem !important;
+}
+
+.sizeMedium {
+  font-size: 0.95rem !important;
+}
+
+.sizeLarge.textHeading {
+  font-size: 1.05rem !important;
+}
+
+.sizeLarge {
+  font-size: 0.92rem !important;
+}
+
+.sizeExtraLarge.textHeading {
+  font-size: 1.2rem !important;
+}
+
+.sizeExtraLarge {
+  font-size: 1rem !important;
+}
+
+.weightBolder {
+  font-weight: 800;
+}
+
+.alignCenter {
+  text-align: center;
+}
+
+.alignRight {
+  text-align: right;
+}
+
+.textLight {
+  color: #ffffff;
+}
+
+.textAccent {
+  color: var(--slideAccent, #50e6ff);
+}
+
+.textGood {
+  color: #6ee7b7;
+}
+
+.textWarning {
+  color: #fbbf24;
+}
+
+.textAttention {
+  color: #fda4af;
+}
+
+.bulletList {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.bulletList li {
+  color: #e6f1fb;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.bulletList li::marker {
+  color: var(--slideAccent, #50e6ff);
+}
+
+/* =====================================================================
+   Container blocks (general containers + style variants)
+   ===================================================================== */
+
+.containerBlock {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.65rem 0.75rem;
+}
+
+.containerNested {
+  padding: 0.5rem 0.6rem;
+}
+
+.containerDefault {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.containerEmphasis {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.containerAccent {
+  background: rgba(80, 230, 255, 0.13);
+  border-color: rgba(80, 230, 255, 0.35);
+}
+
+.containerGood {
+  background: rgba(110, 231, 183, 0.13);
+  border-color: rgba(110, 231, 183, 0.35);
+}
+
+.containerWarning {
+  background: rgba(251, 191, 36, 0.13);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.containerAttention {
+  background: rgba(253, 164, 175, 0.14);
+  border-color: rgba(253, 164, 175, 0.4);
+}
+
+/* =====================================================================
+   Stat block (Container with heading + caption)
+   ===================================================================== */
+
+.statBlock {
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  display: grid;
+  gap: 0.15rem;
+  justify-items: center;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.7rem 0.5rem;
+  text-align: center;
+}
+
+.statValue {
+  color: #ffffff;
+  font-size: clamp(1rem, 2.4vw, 1.55rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.statLabel {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* =====================================================================
+   Chart block
+   ===================================================================== */
+
+.chartBlock {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.7rem 0.75rem;
+}
+
+.blockTitle {
+  color: var(--slideAccent, #50e6ff);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.chartRows {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.chartRow {
+  align-items: center;
+  display: grid;
+  gap: 0.4rem;
+  grid-template-columns: minmax(2.5rem, auto) 1fr minmax(1.6rem, auto);
+  min-width: 0;
+}
+
+.chartLabel,
+.chartValue {
+  color: #e6f1fb;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chartValue {
+  text-align: right;
+}
+
 .chartTrack {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.13);
   border-radius: 999px;
-  height: 0.65rem;
+  height: 0.55rem;
+  min-width: 0;
   overflow: hidden;
 }
 
 .chartFill {
-  background: linear-gradient(90deg, #50e6ff, #0f6cbd);
   border-radius: 999px;
   height: 100%;
+  transition: width 360ms ease;
 }
 
-.tileCode {
-  background: rgba(0, 0, 0, 0.28);
+/* =====================================================================
+   Code + image tiles
+   ===================================================================== */
+
+.codeTile {
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 12px;
   color: #d7ecff;
+  font-size: 0.7rem;
   margin: 0;
+  min-width: 0;
   overflow: auto;
-  padding: 0.8rem;
+  padding: 0.7rem 0.85rem;
 }
 
-.tileImage {
+.imageTile {
   margin: 0;
+  min-width: 0;
 }
 
-.tileImage img {
-  border-radius: 14px;
+.imageTile img {
+  border-radius: 10px;
   display: block;
   max-width: 100%;
+  height: auto;
 }
 
-.tileImage figcaption {
+.imageTile figcaption {
   color: #d7ecff;
-  font-size: 0.78rem;
-  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  margin-top: 0.3rem;
 }
 
-.schemaHeader {
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.schemaHeader strong {
-  display: block;
-  margin-top: 0.25rem;
-}
-
-.schemaPreview,
-.deckPreview {
-  background: #020817;
-  border: 1px solid rgba(80, 230, 255, 0.18);
-  border-radius: 16px;
-  color: #d7ecff;
-  margin: 0;
-  overflow: auto;
-  padding: 1rem;
-}
+/* =====================================================================
+   Schema back face
+   ===================================================================== */
 
 .schemaPreview {
+  background: #020817;
+  border: 1px solid rgba(80, 230, 255, 0.2);
+  border-radius: 12px;
+  color: #d7ecff;
   flex: 1 1 auto;
-  max-height: 455px;
-  min-height: 360px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  margin: 0;
+  max-height: 340px;
+  min-height: 200px;
+  overflow: auto;
+  padding: 0.85rem;
 }
 
-.workspace {
-  display: grid;
-  gap: 1.25rem;
-  grid-template-columns: 0.82fr 1.18fr;
-  padding-top: 0;
-}
+/* =====================================================================
+   Workspace panels (Customize / Preview)
+   ===================================================================== */
 
 .panel {
   background: var(--ifm-card-background-color);
   border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: 22px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.14);
+  border-radius: 20px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.16);
   padding: 1.5rem;
+  min-width: 0;
 }
 
 .uploadBox,
 .generatorForm {
   display: grid;
-  gap: 1rem;
-  margin-top: 1.25rem;
+  gap: 0.95rem;
+  margin-top: 1.1rem;
+}
+
+.uploadBox label,
+.generatorForm label {
+  color: var(--ifm-color-emphasis-800);
+  display: grid;
+  font-size: 0.85rem;
+  font-weight: 700;
+  gap: 0.4rem;
+}
+
+.note {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.82rem;
+  margin: 0;
 }
 
 .success {
@@ -402,6 +624,68 @@
   margin: 1rem 0 0;
 }
 
+.previewActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+/* =====================================================================
+   View-mode tabs (DSL / AC 1.6 / All AC 1.6)
+   ===================================================================== */
+
+.tabs {
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 12px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.5rem 0 1rem;
+  padding: 0.25rem;
+}
+
+.tabsSmall {
+  margin: 0.5rem 0;
+}
+
+.tab {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--ifm-color-emphasis-700);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.4rem 0.85rem;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.tabsSmall .tab {
+  font-size: 0.7rem;
+  padding: 0.32rem 0.6rem;
+}
+
+.tab:hover {
+  color: var(--ifm-color-primary);
+}
+
+.tabActive {
+  background: var(--ifm-card-background-color);
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+.fullPreview {
+  margin-bottom: 1.25rem;
+  min-height: 360px;
+}
+
+.fullPreview .slideCanvas {
+  min-height: 360px;
+  padding: 1.1rem;
+}
+
 .deckStats {
   display: grid;
   gap: 0.75rem;
@@ -411,13 +695,13 @@
 
 .deckStats div {
   background: var(--ifm-color-emphasis-100);
-  border-radius: 14px;
-  padding: 0.9rem;
+  border-radius: 12px;
+  padding: 0.85rem;
 }
 
 .deckStats dt {
   color: var(--ifm-color-emphasis-700);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -429,24 +713,43 @@
 }
 
 .deckPreview {
-  max-height: 620px;
+  background: #020817;
+  border: 1px solid rgba(80, 230, 255, 0.18);
+  border-radius: 14px;
+  color: #d7ecff;
+  font-size: 0.78rem;
+  margin: 0;
+  max-height: 460px;
+  overflow: auto;
+  padding: 1rem;
 }
 
+/* =====================================================================
+   Responsive
+   ===================================================================== */
+
 @media screen and (max-width: 996px) {
-  .templateGrid,
   .workspace {
     grid-template-columns: 1fr;
   }
 
   .sectionHeader,
-  .previewHeader,
-  .schemaHeader {
+  .previewHeader {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .flipCard,
-  .flipFace {
-    min-height: 700px;
+  .heroTitle {
+    font-size: clamp(1.7rem, 6vw, 2.4rem);
+  }
+}
+
+@media screen and (max-width: 520px) {
+  .templateGrid {
+    grid-template-columns: 1fr;
+  }
+  .face,
+  .flipInner {
+    min-height: 560px;
   }
 }

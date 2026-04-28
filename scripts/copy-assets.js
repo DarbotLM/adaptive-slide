@@ -2,8 +2,14 @@ import { copyFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
-const source = resolve(root, "src/plugins/mcp-app/viewer.html");
-const target = resolve(root, "dist/plugins/mcp-app/viewer.html");
 
-mkdirSync(dirname(target), { recursive: true });
-copyFileSync(source, target);
+const copies = [
+  ["src/plugins/mcp-app/viewer.html", "dist/plugins/mcp-app/viewer.html"],
+  ["src/adaptiveCardTransformer.js", "dist/adaptiveCardTransformer.js"],
+];
+
+for (const [from, to] of copies) {
+  const target = resolve(root, to);
+  mkdirSync(dirname(target), { recursive: true });
+  copyFileSync(resolve(root, from), target);
+}
