@@ -1,0 +1,9 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#071A2F"/>
+  <circle cx="220" cy="130" r="220" fill="#0F6CBD" opacity="0.45"/>
+  <circle cx="1010" cy="500" r="260" fill="#50E6FF" opacity="0.2"/>
+  <rect x="96" y="98" width="1008" height="434" rx="34" fill="#0D3A66" stroke="#50E6FF" stroke-width="4"/>
+  <text x="150" y="230" font-family="Arial, sans-serif" font-size="76" font-weight="700" fill="#FFFFFF">Adaptive Slide</text>
+  <text x="150" y="320" font-family="Arial, sans-serif" font-size="38" fill="#D7ECFF">Schema-driven presentations built on Adaptive Cards</text>
+  <text x="150" y="410" font-family="Arial, sans-serif" font-size="30" fill="#50E6FF">JSON Schema. TypeScript renderer. MCP App viewer.</text>
+</svg>
