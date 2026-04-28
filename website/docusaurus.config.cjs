@@ -82,6 +82,11 @@ const config = {
             "Adaptive Cards, presentations, JSON Schema, MCP, MCP App, Docusaurus",
         },
       ],
+      colorMode: {
+        defaultMode: "dark",
+        disableSwitch: false,
+        respectPrefersColorScheme: false,
+      },
       navbar: {
         title: "Adaptive Slide",
         logo: {
@@ -99,6 +104,11 @@ const config = {
             to: "/docs/getting-started",
             position: "left",
             label: "Getting Started",
+          },
+          {
+            to: "/templates",
+            position: "left",
+            label: "Templates",
           },
           {
             href: "https://github.com/DarbotLM/adaptive-slide",
@@ -124,6 +134,10 @@ const config = {
               {
                 label: "MCP App Plugin",
                 to: "/docs/mcp-app-plugin",
+              },
+              {
+                label: "Templates",
+                to: "/templates",
               },
             ],
           },

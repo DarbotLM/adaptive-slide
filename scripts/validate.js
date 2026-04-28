@@ -2,6 +2,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { readFileSync, readdirSync } from "fs";
 import { join, resolve } from "path";
+import { templateDecks } from "../website/src/data/templateDecks.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const SCHEMAS_DIR = join(ROOT, "schemas");
@@ -58,5 +59,20 @@ for (const file of examples) {
   }
 }
 
-console.log(`\n${passed} passed, ${failed} failed out of ${examples.length} examples`);
+for (const template of templateDecks) {
+  const valid = validate(template.deck);
+  const label = `template:${template.id}`;
+  if (valid) {
+    console.log(`PASS: ${label}`);
+    passed++;
+  } else {
+    console.log(`FAIL: ${label}`);
+    for (const err of validate.errors) {
+      console.log(`   ${err.instancePath || "/"} - ${err.message}`);
+    }
+    failed++;
+  }
+}
+
+console.log(`\n${passed} passed, ${failed} failed out of ${examples.length + templateDecks.length} decks`);
 process.exit(failed > 0 ? 1 : 0);

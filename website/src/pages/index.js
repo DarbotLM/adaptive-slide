@@ -73,6 +73,9 @@ export default function Home() {
             <Link className="button button--secondary button--lg" to="/docs/schema-reference">
               Browse schemas
             </Link>
+            <Link className="button button--outline button--lg" to="/templates">
+              Explore templates
+            </Link>
           </div>
         </div>
       </header>
@@ -122,6 +125,10 @@ npm run serve`}</code>
             <Link className={styles.linkCard} to="/docs/mcp-app-plugin">
               <span>MCP App Plugin</span>
               <p>Connect the server, use the tools, and understand viewer behavior.</p>
+            </Link>
+            <Link className={styles.linkCard} to="/templates">
+              <span>Template library</span>
+              <p>Start from training, industry, and generated adaptive card tileslide decks.</p>
             </Link>
             <a
               className={styles.linkCard}
