@@ -278,16 +278,155 @@ function ImageTile({ tile }) {
   );
 }
 
+function MediaTile({ tile }) {
+  const source = Array.isArray(tile.sources) ? tile.sources[0] : null;
+  const aspect = (tile.aspectRatio || "16:9").replace(":", "/");
+  return (
+    <div
+      className={styles.mediaTile}
+      style={{ ...gridStyleFor(tile), aspectRatio: aspect }}
+    >
+      {tile.poster ? (
+        <img className={styles.mediaPoster} src={tile.poster} alt={tile.altText ?? ""} />
+      ) : null}
+      <span className={styles.mediaPlayBadge} aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22">
+          <path fill="currentColor" d="M8 5v14l11-7z" />
+        </svg>
+      </span>
+      {source?.url ? (
+        <span className={styles.mediaSourceLabel}>{source.mimeType ?? "media"}</span>
+      ) : (
+        <span className={styles.mediaSourceLabel}>no source</span>
+      )}
+    </div>
+  );
+}
+
+function InputLabelMock({ label, isRequired }) {
+  if (!label) return null;
+  return (
+    <label className={styles.inputLabelMock}>
+      {label}
+      {isRequired ? (
+        <span className={styles.inputRequiredStar} aria-hidden="true">*</span>
+      ) : null}
+    </label>
+  );
+}
+
+function InputTextMock({ tile }) {
+  return (
+    <div className={styles.inputMock} style={gridStyleFor(tile)}>
+      <InputLabelMock label={tile.label} isRequired={tile.isRequired} />
+      {tile.isMultiline ? (
+        <textarea
+          className={styles.inputControl}
+          placeholder={tile.placeholder ?? ""}
+          defaultValue={tile.value ?? ""}
+          rows={3}
+          maxLength={tile.maxLength ?? undefined}
+          disabled
+          readOnly
+        />
+      ) : (
+        <input
+          className={styles.inputControl}
+          type={tile.style ?? "text"}
+          placeholder={tile.placeholder ?? ""}
+          defaultValue={tile.value ?? ""}
+          maxLength={tile.maxLength ?? undefined}
+          disabled
+          readOnly
+        />
+      )}
+    </div>
+  );
+}
+
+function InputNumberMock({ tile }) {
+  return (
+    <div className={styles.inputMock} style={gridStyleFor(tile)}>
+      <InputLabelMock label={tile.label} isRequired={tile.isRequired} />
+      <input
+        className={styles.inputControl}
+        type="number"
+        placeholder={tile.placeholder ?? ""}
+        defaultValue={tile.value ?? ""}
+        min={tile.min ?? undefined}
+        max={tile.max ?? undefined}
+        disabled
+        readOnly
+      />
+    </div>
+  );
+}
+
+function InputChoiceSetMock({ tile }) {
+  const style = tile.style ?? "compact";
+  const choices = Array.isArray(tile.choices) ? tile.choices : [];
+  const initialValues = tile.value != null
+    ? String(tile.value).split(",").map((v) => v.trim())
+    : [];
+
+  if (style === "expanded") {
+    const inputType = tile.isMultiSelect ? "checkbox" : "radio";
+    return (
+      <fieldset className={clsx(styles.inputMock, styles.inputChoiceFieldset)} style={gridStyleFor(tile)}>
+        <InputLabelMock label={tile.label} isRequired={tile.isRequired} />
+        <div className={styles.choiceList} role="group">
+          {choices.map((choice, idx) => (
+            <label key={`choice-${idx}`} className={styles.choiceRow}>
+              <input
+                type={inputType}
+                name={tile.id}
+                value={choice.value}
+                defaultChecked={initialValues.includes(choice.value)}
+                disabled
+                readOnly
+              />
+              <span>{choice.title}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    );
+  }
+
+  return (
+    <div className={styles.inputMock} style={gridStyleFor(tile)}>
+      <InputLabelMock label={tile.label} isRequired={tile.isRequired} />
+      <select
+        className={styles.inputControl}
+        defaultValue={initialValues[0] ?? ""}
+        multiple={Boolean(tile.isMultiSelect)}
+        disabled
+      >
+        {tile.placeholder ? <option value="">{tile.placeholder}</option> : null}
+        {choices.map((choice, idx) => (
+          <option key={`opt-${idx}`} value={choice.value}>
+            {choice.title}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function AdaptiveTile({ tile, depth = 0 }) {
   if (!tile || tile.isVisible === false) return null;
   if (tile.type === "Tile.Text") return <TextTile tile={tile} />;
   if (tile.type === "Tile.Chart") return <ChartBlock tile={tile} />;
   if (tile.type === "Tile.Code") return <CodeTile tile={tile} />;
   if (tile.type === "Tile.Image") return <ImageTile tile={tile} />;
+  if (tile.type === "Tile.Media") return <MediaTile tile={tile} />;
   if (tile.type === "Tile.Container") {
     if (isStatContainer(tile)) return <StatBlock tile={tile} />;
     return <ContainerTile tile={tile} depth={depth} />;
   }
+  if (tile.type === "Tile.Input.Text") return <InputTextMock tile={tile} />;
+  if (tile.type === "Tile.Input.Number") return <InputNumberMock tile={tile} />;
+  if (tile.type === "Tile.Input.ChoiceSet") return <InputChoiceSetMock tile={tile} />;
   return null;
 }
 
@@ -570,25 +709,26 @@ export default function TemplatesPage() {
   return (
     <Layout
       title="Templates"
-      description="Adaptive Slide template library with industry-tailored dashboards, schema preview, upload, natural-language generation, and Adaptive Cards 1.6 compliance."
+      description="Adaptive Slide template library with industry dashboards, Adaptive Card layout patterns, schema preview, upload, natural-language generation, and Adaptive Cards 1.6 compliance."
     >
       <header className={styles.hero}>
         <div className="container">
           <p className={styles.eyebrow}>Adaptive Card tileslide library</p>
           <Heading as="h1" className={styles.heroTitle}>
-            Industry dashboards that compile to Adaptive Cards 1.6.
+            Templates that compile to Adaptive Cards 1.6.
           </Heading>
           <p className={styles.heroSubtitle}>
-            Each template is a real working dashboard with KPIs, charts, and action lists.
+            Industry dashboards plus the eight canonical Adaptive Card layout patterns
+            (hero, thumbnail, list, digest, media, form, quick input, expandable).
             Flip a card to copy either the AdaptiveDeck DSL or the rendered Adaptive Cards 1.6
             JSON. Upload your own deck or generate one from a natural-language prompt.
           </p>
           <div className={styles.heroStats}>
             <span>
-              <strong>{templateDecks.length}</strong> industry dashboards
+              <strong>{templateDecks.length}</strong> templates
             </span>
             <span>
-              <strong>{categories.length - 1}</strong> verticals
+              <strong>{categories.length - 1}</strong> categories
             </span>
             <span>
               <strong>AC 1.6</strong> schema validated

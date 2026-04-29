@@ -237,6 +237,63 @@ function tileContainerToContainer(tile) {
   return applyCommonProps(c, tile);
 }
 
+const INPUT_TEXT_STYLE_MAP = {
+  text: "Text",
+  tel: "Tel",
+  url: "Url",
+  email: "Email",
+  password: "Password",
+};
+
+const CHOICE_SET_STYLE_MAP = {
+  compact: "compact",
+  expanded: "expanded",
+  filtered: "filtered",
+};
+
+function applyInputCommon(element, tile) {
+  if (tile.label) element.label = tile.label;
+  if (tile.isRequired) element.isRequired = true;
+  if (tile.errorMessage) element.errorMessage = tile.errorMessage;
+  return element;
+}
+
+function tileInputTextToInput(tile) {
+  const input = { type: "Input.Text" };
+  if (tile.placeholder) input.placeholder = tile.placeholder;
+  if (tile.value !== undefined) input.value = String(tile.value);
+  if (tile.isMultiline) input.isMultiline = true;
+  if (typeof tile.maxLength === "number") input.maxLength = tile.maxLength;
+  if (tile.style && INPUT_TEXT_STYLE_MAP[tile.style]) input.style = INPUT_TEXT_STYLE_MAP[tile.style];
+  if (tile.regex) input.regex = tile.regex;
+  applyInputCommon(input, tile);
+  return applyCommonProps(input, tile);
+}
+
+function tileInputNumberToInput(tile) {
+  const input = { type: "Input.Number" };
+  if (tile.placeholder) input.placeholder = tile.placeholder;
+  if (typeof tile.value === "number") input.value = tile.value;
+  if (typeof tile.min === "number") input.min = tile.min;
+  if (typeof tile.max === "number") input.max = tile.max;
+  applyInputCommon(input, tile);
+  return applyCommonProps(input, tile);
+}
+
+function tileInputChoiceSetToInput(tile) {
+  const input = {
+    type: "Input.ChoiceSet",
+    choices: (tile.choices || []).map((c) => ({ title: c.title, value: c.value })),
+  };
+  if (tile.placeholder) input.placeholder = tile.placeholder;
+  if (tile.value !== undefined) input.value = String(tile.value);
+  if (tile.isMultiSelect) input.isMultiSelect = true;
+  if (tile.style && CHOICE_SET_STYLE_MAP[tile.style]) input.style = CHOICE_SET_STYLE_MAP[tile.style];
+  if (tile.wrap === true) input.wrap = true;
+  applyInputCommon(input, tile);
+  return applyCommonProps(input, tile);
+}
+
 function tileToElement(tile) {
   if (!tile) return null;
   switch (tile.type) {
@@ -252,6 +309,12 @@ function tileToElement(tile) {
       return tileMediaToMedia(tile);
     case "Tile.Container":
       return tileContainerToContainer(tile);
+    case "Tile.Input.Text":
+      return tileInputTextToInput(tile);
+    case "Tile.Input.Number":
+      return tileInputNumberToInput(tile);
+    case "Tile.Input.ChoiceSet":
+      return tileInputChoiceSetToInput(tile);
     default:
       return null;
   }

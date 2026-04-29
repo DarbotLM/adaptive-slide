@@ -86,7 +86,16 @@ export interface Action {
 }
 
 // Tile union type
-export type Tile = TextTile | ImageTile | CodeTile | ChartTile | MediaTile | ContainerTile;
+export type Tile =
+  | TextTile
+  | ImageTile
+  | CodeTile
+  | ChartTile
+  | MediaTile
+  | ContainerTile
+  | InputTextTile
+  | InputNumberTile
+  | InputChoiceSetTile;
 
 interface TileBase {
   id?: string;
@@ -199,4 +208,51 @@ export interface ContainerTile extends TileBase {
     url: string;
     fillMode?: "cover" | "contain" | "repeat" | "stretch";
   };
+}
+
+// ---------------------------------------------------------------------------
+// Input tiles — interactive form controls that compile to AC 1.6 Input.*
+// ---------------------------------------------------------------------------
+
+interface InputTileBase extends TileBase {
+  /** Required for inputs — the key under which the value is submitted. */
+  id: string;
+  label?: string;
+  isRequired?: boolean;
+  errorMessage?: string;
+}
+
+export interface InputTextTile extends InputTileBase {
+  type: "Tile.Input.Text";
+  placeholder?: string;
+  value?: string;
+  isMultiline?: boolean;
+  maxLength?: number;
+  /** Maps to AC 1.6 Input.Text.style */
+  style?: "text" | "tel" | "url" | "email" | "password";
+  regex?: string;
+}
+
+export interface InputNumberTile extends InputTileBase {
+  type: "Tile.Input.Number";
+  placeholder?: string;
+  value?: number;
+  min?: number;
+  max?: number;
+}
+
+export interface InputChoice {
+  title: string;
+  value: string;
+}
+
+export interface InputChoiceSetTile extends InputTileBase {
+  type: "Tile.Input.ChoiceSet";
+  choices: InputChoice[];
+  placeholder?: string;
+  value?: string;
+  isMultiSelect?: boolean;
+  /** AC 1.6: compact (dropdown), expanded (radios/checkboxes), filtered (autocomplete). */
+  style?: "compact" | "expanded" | "filtered";
+  wrap?: boolean;
 }

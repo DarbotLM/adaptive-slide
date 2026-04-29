@@ -83,6 +83,21 @@ const themes = {
     fontFamily: "Segoe UI, sans-serif",
     darkMode: true,
   },
+  acPattern: {
+    primaryColor: "#2563eb",
+    accentColor: "#60a5fa",
+    backgroundColor: "#0a1834",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  trainingCourse: {
+    name: "Training Course Emerald",
+    primaryColor: "#10b981",
+    accentColor: "#34d399",
+    backgroundColor: "#022c22",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
 };
 
 const defaultDeckSettings = {
@@ -357,6 +372,455 @@ function closeSlide(id, title, subtitle, theme) {
   };
 }
 
+// =============================================================================
+// Adaptive Card layout-pattern helpers
+//
+// These factories mirror the eight "Card layouts" guidance from the official
+// Adaptive Cards design best practices page (Hero, Thumbnail, List, Digest,
+// Video/Media, Form, Quick input, Expandable). They produce visually faithful
+// flipcards within the current renderer's capability set:
+//
+//   - Multi-column arrangements use slide-level grid (Container.layout="row"
+//     is intentionally avoided because the website renderer ignores it).
+//   - Mock buttons/inputs use container styles only (no className hooks exist
+//     on the DSL).
+//   - Tile.Media references a stable public sample so all three runtime
+//     renderers (templates.js, viewer.html, src/transformer.ts) play cleanly.
+// =============================================================================
+
+const SAMPLE_VIDEO_URL =
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+const SAMPLE_VIDEO_POSTER = "https://darbotlm.github.io/adaptive-slide/img/social-card.svg";
+const SAMPLE_HERO_IMAGE = "https://darbotlm.github.io/adaptive-slide/img/social-card.svg";
+const SAMPLE_THUMB_IMAGE = "https://darbotlm.github.io/adaptive-slide/img/logo.svg";
+const SAMPLE_AVATAR = "https://darbotlm.github.io/adaptive-slide/img/favicon.svg";
+
+function buttonMock({ label, style = "accent", gridPosition }) {
+  return {
+    type: "Tile.Container",
+    style,
+    gridPosition,
+    items: [
+      {
+        type: "Tile.Text",
+        text: label,
+        style: "subheading",
+        weight: "bolder",
+        color: "light",
+        horizontalAlignment: "center",
+      },
+    ],
+  };
+}
+
+function inputMock({ label, placeholder, gridPosition }) {
+  return {
+    type: "Tile.Container",
+    style: "emphasis",
+    gridPosition,
+    items: [
+      {
+        type: "Tile.Text",
+        text: label,
+        style: "caption",
+        color: "accent",
+        weight: "bolder",
+      },
+      {
+        type: "Tile.Text",
+        text: placeholder,
+        style: "body",
+        color: "light",
+      },
+    ],
+  };
+}
+
+function listRowMock({ avatarUrl, title, subtitle, meta, row, columns = 4 }) {
+  return [
+    {
+      type: "Tile.Image",
+      url: avatarUrl,
+      altText: title,
+      gridPosition: { column: 1, row, columnSpan: 1 },
+    },
+    {
+      type: "Tile.Container",
+      style: "default",
+      gridPosition: { column: 2, row, columnSpan: columns - 2 },
+      items: [
+        { type: "Tile.Text", text: title, style: "subheading", weight: "bolder", color: "accent" },
+        { type: "Tile.Text", text: subtitle, style: "caption", color: "light" },
+      ],
+    },
+    {
+      type: "Tile.Text",
+      text: meta,
+      style: "caption",
+      color: "light",
+      horizontalAlignment: "right",
+      gridPosition: { column: columns, row, columnSpan: 1 },
+    },
+  ];
+}
+
+function digestArticle({ imageUrl, title, summary, gridPosition }) {
+  return {
+    type: "Tile.Container",
+    style: "default",
+    gridPosition,
+    items: [
+      { type: "Tile.Image", url: imageUrl, altText: title },
+      { type: "Tile.Text", text: title, style: "subheading", weight: "bolder", color: "accent" },
+      { type: "Tile.Text", text: summary, style: "caption", color: "light" },
+    ],
+  };
+}
+
+function mediaTile({ url, mimeType = "video/mp4", poster, gridPosition }) {
+  const tile = {
+    type: "Tile.Media",
+    sources: [{ url, mimeType }],
+    aspectRatio: "16:9",
+    gridPosition,
+  };
+  if (poster) tile.poster = poster;
+  return tile;
+}
+
+function whenToUseSlide({ id, title, when, dont, theme }) {
+  return {
+    type: "AdaptiveSlide",
+    id,
+    title,
+    background: gradientBackground(theme),
+    layout: { mode: "grid", columns: 2, gap: "default" },
+    body: [
+      headerTile({ text: title, gridPosition: { column: 1, row: 1, columnSpan: 2 } }),
+      {
+        type: "Tile.Container",
+        style: "good",
+        gridPosition: { column: 1, row: 2 },
+        items: [
+          { type: "Tile.Text", text: "When to use", style: "subheading", weight: "bolder", color: "accent" },
+          {
+            type: "Tile.Text",
+            text: when.map((item) => `- ${item}`).join("\n"),
+            style: "body",
+            color: "light",
+          },
+        ],
+      },
+      {
+        type: "Tile.Container",
+        style: "attention",
+        gridPosition: { column: 2, row: 2 },
+        items: [
+          { type: "Tile.Text", text: "Avoid when", style: "subheading", weight: "bolder", color: "accent" },
+          {
+            type: "Tile.Text",
+            text: dont.map((item) => `- ${item}`).join("\n"),
+            style: "body",
+            color: "light",
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function anatomySlide({ id, title, parts, theme }) {
+  return {
+    type: "AdaptiveSlide",
+    id,
+    title,
+    background: gradientBackground(theme),
+    layout: { mode: "grid", columns: 2, gap: "default" },
+    body: [
+      headerTile({ text: "Anatomy", gridPosition: { column: 1, row: 1, columnSpan: 2 } }),
+      ...parts.map((part, index) => ({
+        type: "Tile.Container",
+        style: index % 2 === 0 ? "accent" : "emphasis",
+        gridPosition: { column: (index % 2) + 1, row: Math.floor(index / 2) + 2 },
+        items: [
+          { type: "Tile.Text", text: part.label, style: "subheading", weight: "bolder", color: "accent" },
+          { type: "Tile.Text", text: part.detail, style: "caption", color: "light" },
+        ],
+      })),
+    ],
+  };
+}
+
+// -----------------------------------------------------------------------------
+// Layout-specific showcase slides
+// -----------------------------------------------------------------------------
+
+function heroLayoutSlide(theme) {
+  return dashboardSlide({
+    id: "hero-showcase",
+    title: "Hero layout",
+    subtitle: "An immersive image carries the narrative; one primary action sits below.",
+    columns: 4,
+    body: [
+      {
+        type: "Tile.Image",
+        url: SAMPLE_HERO_IMAGE,
+        altText: "Featured story image",
+        gridPosition: { column: 1, row: 3, columnSpan: 4, rowSpan: 2 },
+      },
+      {
+        type: "Tile.Text",
+        text: "Adaptive Cards 1.6 — design system release",
+        style: "heading",
+        size: "large",
+        color: "light",
+        weight: "bolder",
+        gridPosition: { column: 1, row: 5, columnSpan: 4 },
+      },
+      {
+        type: "Tile.Text",
+        text: "A refined token palette, dark-mode parity, and motion guidance for embedded experiences across Teams, Outlook, and Power Apps.",
+        style: "body",
+        color: "light",
+        gridPosition: { column: 1, row: 6, columnSpan: 4 },
+      },
+      buttonMock({ label: "Read article", style: "accent", gridPosition: { column: 1, row: 7, columnSpan: 2 } }),
+      buttonMock({ label: "Share", style: "default", gridPosition: { column: 3, row: 7, columnSpan: 2 } }),
+    ],
+    theme,
+  });
+}
+
+function thumbnailLayoutSlide(theme) {
+  return dashboardSlide({
+    id: "thumbnail-showcase",
+    title: "Thumbnail layout",
+    subtitle: "Compact image plus actionable message — perfect for dense feeds.",
+    columns: 4,
+    body: [
+      {
+        type: "Tile.Image",
+        url: SAMPLE_THUMB_IMAGE,
+        altText: "Thumbnail",
+        gridPosition: { column: 1, row: 3, columnSpan: 1, rowSpan: 3 },
+      },
+      {
+        type: "Tile.Text",
+        text: "Build status: passing",
+        style: "subheading",
+        weight: "bolder",
+        color: "accent",
+        gridPosition: { column: 2, row: 3, columnSpan: 3 },
+      },
+      {
+        type: "Tile.Text",
+        text: "All 247 tests passed on main. Ready to promote to release/2025.11.",
+        style: "body",
+        color: "light",
+        gridPosition: { column: 2, row: 4, columnSpan: 3 },
+      },
+      buttonMock({ label: "Open run", style: "accent", gridPosition: { column: 2, row: 5, columnSpan: 3 } }),
+    ],
+    theme,
+  });
+}
+
+function listLayoutSlide(theme) {
+  const rows = [
+    listRowMock({
+      avatarUrl: SAMPLE_AVATAR,
+      title: "Jordan Stevens",
+      subtitle: "Adaptive Cards renderer regression",
+      meta: "Active",
+      row: 3,
+    }),
+    listRowMock({
+      avatarUrl: SAMPLE_AVATAR,
+      title: "Priya Raman",
+      subtitle: "Schema 1.6 validation gap",
+      meta: "Triage",
+      row: 4,
+    }),
+    listRowMock({
+      avatarUrl: SAMPLE_AVATAR,
+      title: "Marco Lopez",
+      subtitle: "Power Apps host parity audit",
+      meta: "Backlog",
+      row: 5,
+    }),
+    listRowMock({
+      avatarUrl: SAMPLE_AVATAR,
+      title: "Aiko Tanaka",
+      subtitle: "Localization tokens for date/time",
+      meta: "Ready",
+      row: 6,
+    }),
+  ];
+  return dashboardSlide({
+    id: "list-showcase",
+    title: "List layout",
+    subtitle: "Pick one item from a scannable list — keep each row terse.",
+    columns: 4,
+    body: rows.flat(),
+    theme,
+  });
+}
+
+function digestLayoutSlide(theme) {
+  return dashboardSlide({
+    id: "digest-showcase",
+    title: "Digest layout",
+    subtitle: "News round-up — three article cards in one glance.",
+    columns: 3,
+    body: [
+      digestArticle({
+        imageUrl: SAMPLE_HERO_IMAGE,
+        title: "Renderer parity",
+        summary: "Outlook, Teams, and Power Apps now share a single host-config baseline.",
+        gridPosition: { column: 1, row: 3 },
+      }),
+      digestArticle({
+        imageUrl: SAMPLE_HERO_IMAGE,
+        title: "Authoring guide",
+        summary: "Updated DSL playbook with grid layout patterns and accessibility rules.",
+        gridPosition: { column: 2, row: 3 },
+      }),
+      digestArticle({
+        imageUrl: SAMPLE_HERO_IMAGE,
+        title: "MCP server",
+        summary: "Drop-in npx server brings Adaptive Slide tools to any MCP-aware client.",
+        gridPosition: { column: 3, row: 3 },
+      }),
+    ],
+    theme,
+  });
+}
+
+function mediaLayoutSlide(theme) {
+  return dashboardSlide({
+    id: "media-showcase",
+    title: "Video and media layout",
+    subtitle: "Combine a media element with supporting text and one clear action.",
+    columns: 4,
+    body: [
+      mediaTile({
+        url: SAMPLE_VIDEO_URL,
+        poster: SAMPLE_VIDEO_POSTER,
+        gridPosition: { column: 1, row: 3, columnSpan: 4, rowSpan: 2 },
+      }),
+      {
+        type: "Tile.Text",
+        text: "Adaptive Cards in 90 seconds — what they are and where they render.",
+        style: "body",
+        color: "light",
+        gridPosition: { column: 1, row: 5, columnSpan: 4 },
+      },
+      buttonMock({ label: "Open transcript", style: "accent", gridPosition: { column: 1, row: 6, columnSpan: 2 } }),
+      buttonMock({ label: "Save for later", style: "default", gridPosition: { column: 3, row: 6, columnSpan: 2 } }),
+    ],
+    theme,
+  });
+}
+
+function formLayoutSlide(theme) {
+  return dashboardSlide({
+    id: "form-showcase",
+    title: "Form layout",
+    subtitle: "Collect a small set of structured inputs to file a task or ticket.",
+    columns: 4,
+    body: [
+      inputMock({
+        label: "Title",
+        placeholder: "Describe the issue in one line",
+        gridPosition: { column: 1, row: 3, columnSpan: 4 },
+      }),
+      inputMock({
+        label: "Severity",
+        placeholder: "Select severity",
+        gridPosition: { column: 1, row: 4, columnSpan: 2 },
+      }),
+      inputMock({
+        label: "Assignee",
+        placeholder: "Pick a teammate",
+        gridPosition: { column: 3, row: 4, columnSpan: 2 },
+      }),
+      inputMock({
+        label: "Steps to reproduce",
+        placeholder: "1. Open ...\n2. Click ...\n3. Observe ...",
+        gridPosition: { column: 1, row: 5, columnSpan: 4 },
+      }),
+      buttonMock({ label: "Submit", style: "accent", gridPosition: { column: 1, row: 6, columnSpan: 2 } }),
+      buttonMock({ label: "Cancel", style: "default", gridPosition: { column: 3, row: 6, columnSpan: 2 } }),
+    ],
+    theme,
+  });
+}
+
+function quickInputLayoutSlide(theme) {
+  return dashboardSlide({
+    id: "quick-input-showcase",
+    title: "Quick input layout",
+    subtitle: "One prompt, one input, one send — for in-the-moment replies.",
+    columns: 4,
+    body: [
+      {
+        type: "Tile.Text",
+        text: "How would you rate the new schema validator?",
+        style: "subheading",
+        weight: "bolder",
+        color: "accent",
+        gridPosition: { column: 1, row: 3, columnSpan: 4 },
+      },
+      inputMock({
+        label: "Your reply",
+        placeholder: "Type a short answer ...",
+        gridPosition: { column: 1, row: 4, columnSpan: 3 },
+      }),
+      buttonMock({ label: "Send", style: "accent", gridPosition: { column: 4, row: 4, columnSpan: 1 } }),
+    ],
+    theme,
+  });
+}
+
+function expandableLayoutSlide(theme) {
+  return dashboardSlide({
+    id: "expandable-showcase",
+    title: "Expandable layout",
+    subtitle: "Lead with the summary; reveal extra detail only on demand.",
+    columns: 4,
+    body: [
+      {
+        type: "Tile.Text",
+        text: "Deployment passed all gates",
+        style: "subheading",
+        weight: "bolder",
+        color: "accent",
+        gridPosition: { column: 1, row: 3, columnSpan: 4 },
+      },
+      {
+        type: "Tile.Text",
+        text: "Build 2025.11.04 promoted to release with 0 critical findings.",
+        style: "body",
+        color: "light",
+        gridPosition: { column: 1, row: 4, columnSpan: 4 },
+      },
+      buttonMock({ label: "Show details", style: "accent", gridPosition: { column: 1, row: 5, columnSpan: 4 } }),
+      {
+        type: "Tile.Container",
+        style: "emphasis",
+        gridPosition: { column: 1, row: 6, columnSpan: 4 },
+        items: [
+          { type: "Tile.Text", text: "Coverage", style: "caption", color: "accent", weight: "bolder" },
+          { type: "Tile.Text", text: "Lines 92.4% — Branches 88.1% — Functions 95.0%", style: "body", color: "light" },
+          { type: "Tile.Text", text: "Security", style: "caption", color: "accent", weight: "bolder" },
+          { type: "Tile.Text", text: "0 critical, 1 medium (false positive)", style: "body", color: "light" },
+        ],
+      },
+    ],
+    theme,
+  });
+}
+
 export function createPromptDeck(prompt) {
   const normalizedPrompt = prompt.trim() || "Custom adaptive card training deck";
   const title =
@@ -484,6 +948,253 @@ export const templateDecks = [
           "Track completion weekly and escalate at-risk learners early.",
           themes.training,
         ),
+      ],
+    }),
+  },
+
+  {
+    id: "training-dsl-101",
+    title: "Adaptive Slide DSL 101 — 8-card course",
+    category: "Training",
+    useCase: "Eight-card course pattern: title, six modules, validation card",
+    audience: "Course authors, enablement, learning designers",
+    summary:
+      "Repeatable training pattern: title card + six content cards + a validation card with question, 1-5 rating, free-text feedback, and Submit to earn credit.",
+    tags: ["training", "course", "input", "validation", "submit", "rating"],
+    deck: deck({
+      title: "Adaptive Slide DSL 101",
+      description:
+        "An eight-card crash course on the Adaptive Slide DSL: title, six training modules, and a combined validation card with question, rating, feedback, and submit. Credit-granting requires a host submit handler.",
+      tags: ["training", "course", "dsl", "input", "validation", "submit"],
+      theme: themes.trainingCourse,
+      slides: [
+        {
+          type: "AdaptiveSlide",
+          id: "card-1-title",
+          title: "Title — Adaptive Slide DSL 101",
+          background: {
+            gradient: { type: "linear", colors: ["#022c22", "#065f46", "#10b981"], angle: 145 },
+          },
+          body: [
+            {
+              type: "Tile.Text",
+              text: "Adaptive Slide DSL 101",
+              style: "heading",
+              size: "extraLarge",
+              weight: "bolder",
+              color: "light",
+              horizontalAlignment: "center",
+              spacing: "extraLarge",
+            },
+            {
+              type: "Tile.Text",
+              text: "An eight-card crash course on authoring schema-driven decks",
+              style: "subheading",
+              color: "light",
+              horizontalAlignment: "center",
+            },
+            {
+              type: "Tile.Text",
+              text: "Six modules · One validation card · Earns completion credit",
+              style: "caption",
+              color: "light",
+              horizontalAlignment: "center",
+              spacing: "large",
+            },
+          ],
+          notes: "Welcome. Set expectations: 6 short modules then a single validation card.",
+        },
+        {
+          type: "AdaptiveSlide",
+          id: "card-2-module-overview",
+          title: "Module 1 — What is Adaptive Slide?",
+          body: [
+            { type: "Tile.Text", text: "Module 1 of 6", style: "caption", color: "accent", weight: "bolder" },
+            { type: "Tile.Text", text: "What is Adaptive Slide?", style: "heading", size: "large" },
+            {
+              type: "Tile.Text",
+              text:
+                "Adaptive Slide is a JSON-first DSL that authors decks as schema-validated documents and compiles each slide to a fully compliant Adaptive Card 1.6 payload. One source, many surfaces: Teams, Outlook, web, MCP App.",
+              style: "body",
+            },
+            {
+              type: "Tile.Container",
+              style: "accent",
+              items: [
+                {
+                  type: "Tile.Text",
+                  text: "Key idea — your slide is the Adaptive Card body. The transformer fills in the rest.",
+                  style: "body",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "AdaptiveSlide",
+          id: "card-3-module-structure",
+          title: "Module 2 — Decks, Slides, Tiles",
+          body: [
+            { type: "Tile.Text", text: "Module 2 of 6", style: "caption", color: "accent", weight: "bolder" },
+            { type: "Tile.Text", text: "Decks, Slides, Tiles", style: "heading", size: "large" },
+            {
+              type: "Tile.Code",
+              language: "json",
+              title: "minimal.deck.json",
+              code:
+                '{\n  "type": "AdaptiveDeck",\n  "version": "1.0.0",\n  "slides": [\n    {\n      "type": "AdaptiveSlide",\n      "body": [\n        { "type": "Tile.Text", "text": "Hello!" }\n      ]\n    }\n  ]\n}',
+              showLineNumbers: true,
+              theme: "dark",
+            },
+          ],
+        },
+        {
+          type: "AdaptiveSlide",
+          id: "card-4-module-layouts",
+          title: "Module 3 — Layouts",
+          body: [
+            { type: "Tile.Text", text: "Module 3 of 6", style: "caption", color: "accent", weight: "bolder" },
+            { type: "Tile.Text", text: "Layouts", style: "heading", size: "large" },
+            {
+              type: "Tile.Container",
+              style: "emphasis",
+              items: [
+                { type: "Tile.Text", text: "**stack** — vertical flow (default). Best for long-form reading.", style: "body" },
+                { type: "Tile.Text", text: "**grid** — N columns, with gridPosition per tile. Best for dashboards.", style: "body" },
+                { type: "Tile.Text", text: "**freeform** — absolute positioning. Best for hero slides and infographics.", style: "body" },
+              ],
+            },
+          ],
+        },
+        {
+          type: "AdaptiveSlide",
+          id: "card-5-module-tiles",
+          title: "Module 4 — Tile Types",
+          body: [
+            { type: "Tile.Text", text: "Module 4 of 6", style: "caption", color: "accent", weight: "bolder" },
+            { type: "Tile.Text", text: "Tile Types", style: "heading", size: "large" },
+            {
+              type: "Tile.Container",
+              layout: "row",
+              style: "emphasis",
+              items: [
+                { type: "Tile.Text", text: "**Content** — Text, Image, Code, Chart, Media, Container.", style: "body" },
+                { type: "Tile.Text", text: "**Inputs** — Input.Text, Input.Number, Input.ChoiceSet (this card 8 uses all three).", style: "body" },
+              ],
+            },
+            {
+              type: "Tile.Text",
+              text: "Every tile compiles to a real AC 1.6 element. There is no proprietary surface — your deck runs anywhere a card runs.",
+              style: "caption",
+              spacing: "medium",
+            },
+          ],
+        },
+        {
+          type: "AdaptiveSlide",
+          id: "card-6-module-themes",
+          title: "Module 5 — Themes, Transitions, Actions",
+          body: [
+            { type: "Tile.Text", text: "Module 5 of 6", style: "caption", color: "accent", weight: "bolder" },
+            { type: "Tile.Text", text: "Themes, Transitions, Actions", style: "heading", size: "large" },
+            {
+              type: "Tile.Container",
+              style: "good",
+              items: [
+                { type: "Tile.Text", text: "**Theme** — primaryColor, accentColor, backgroundColor, fontFamily, darkMode. Applies deck-wide.", style: "body" },
+                { type: "Tile.Text", text: "**Transitions** — fade, slide-left, slide-right, slide-up, zoom, none. Per-slide override.", style: "body" },
+                { type: "Tile.Text", text: "**Actions** — OpenUrl, Submit (host-handled), GoToSlide, NextSlide, PrevSlide.", style: "body" },
+              ],
+            },
+          ],
+        },
+        {
+          type: "AdaptiveSlide",
+          id: "card-7-module-transform",
+          title: "Module 6 — AC 1.6 Transformation",
+          body: [
+            { type: "Tile.Text", text: "Module 6 of 6", style: "caption", color: "accent", weight: "bolder" },
+            { type: "Tile.Text", text: "AC 1.6 Transformation", style: "heading", size: "large" },
+            {
+              type: "Tile.Code",
+              language: "javascript",
+              title: "transform.js",
+              code:
+                'import { slideToAdaptiveCard } from "adaptive-slide";\n\nconst card = slideToAdaptiveCard(deck.slides[7], deck);\n// card now has Input.ChoiceSet, Input.Text, Action.Submit\n// Send to Teams, Outlook, or any AC 1.6 host.',
+              showLineNumbers: false,
+              theme: "dark",
+            },
+            {
+              type: "Tile.Text",
+              text: "The next card validates what you've learned. Answer the question, rate the training, and submit.",
+              style: "caption",
+              spacing: "medium",
+            },
+          ],
+        },
+        {
+          type: "AdaptiveSlide",
+          id: "card-8-validation",
+          title: "Validation — Earn Credit",
+          body: [
+            { type: "Tile.Text", text: "Validation", style: "heading", size: "large" },
+            {
+              type: "Tile.Text",
+              text: "Answer the question, rate the training, and tell us what to improve. Submit to earn completion credit.",
+              style: "body",
+              spacing: "small",
+            },
+            {
+              type: "Tile.Input.ChoiceSet",
+              id: "quizAnswer",
+              label: "1. Which of these is NOT an Adaptive Slide tile type?",
+              style: "expanded",
+              isRequired: true,
+              errorMessage: "Pick the option that does not exist in the DSL.",
+              choices: [
+                { title: "Tile.Text", value: "text" },
+                { title: "Tile.Image", value: "image" },
+                { title: "Tile.Button", value: "button" },
+                { title: "Tile.Container", value: "container" },
+              ],
+              spacing: "medium",
+            },
+            {
+              type: "Tile.Input.ChoiceSet",
+              id: "courseRating",
+              label: "2. How clear was this training? (1 = Poor, 5 = Excellent)",
+              style: "expanded",
+              isRequired: true,
+              errorMessage: "Pick a rating from 1 to 5.",
+              choices: [
+                { title: "1 — Poor", value: "1" },
+                { title: "2 — Fair", value: "2" },
+                { title: "3 — Good", value: "3" },
+                { title: "4 — Great", value: "4" },
+                { title: "5 — Excellent", value: "5" },
+              ],
+              spacing: "medium",
+            },
+            {
+              type: "Tile.Input.Text",
+              id: "feedbackComment",
+              label: "3. What can we improve? (optional)",
+              placeholder: "One or two sentences is plenty.",
+              isMultiline: true,
+              maxLength: 500,
+              spacing: "medium",
+            },
+          ],
+          actions: [
+            {
+              type: "Action.Submit",
+              title: "Complete and get credit",
+              data: { courseId: "training-dsl-101", action: "complete-and-credit" },
+            },
+          ],
+          notes:
+            "Submit is host-handled. Hosts (Teams, Outlook, MCP App) receive the inputs payload (quizAnswer, courseRating, feedbackComment) plus the static data (courseId, action) to grant credit.",
+        },
       ],
     }),
   },
@@ -1136,6 +1847,342 @@ export const templateDecks = [
           "Track commitments and convert learnings into a reusable support article.",
           themes.support,
         ),
+      ],
+    }),
+  },
+  {
+    id: "ac-layout-hero",
+    category: "Card layouts",
+    title: "Hero layout",
+    summary: "Image-first storytelling for articles, releases, and announcements.",
+    tags: ["adaptive cards", "layout", "hero"],
+    deck: deck({
+      title: "Hero card layout",
+      description: "Adaptive Cards hero layout — large image carries the message; one primary action sits below.",
+      tags: ["layout", "hero", "adaptive-cards"],
+      theme: themes.acPattern,
+      slides: [
+        heroLayoutSlide(themes.acPattern),
+        whenToUseSlide({
+          id: "hero-when",
+          title: "Hero — when to use",
+          when: [
+            "An article, release, or announcement where an image tells most of the story",
+            "There is one clear primary action (read, share, open)",
+            "Card width is wide or standard breakpoint",
+          ],
+          dont: [
+            "The image is purely decorative or low contrast",
+            "There are more than two competing actions",
+            "The card must remain compact in narrow widths",
+          ],
+          theme: themes.acPattern,
+        }),
+        anatomySlide({
+          id: "hero-anatomy",
+          title: "Hero — anatomy",
+          parts: [
+            { label: "Hero image", detail: "Full-width image with 4.5:1 contrast against any overlaid text" },
+            { label: "Headline", detail: "TextBlock styled heading, weight bolder, light color" },
+            { label: "Body", detail: "Short body copy that complements (not duplicates) the image" },
+            { label: "Primary action", detail: "Single accented button; secondary actions stay quiet" },
+          ],
+          theme: themes.acPattern,
+        }),
+      ],
+    }),
+  },
+  {
+    id: "ac-layout-thumbnail",
+    category: "Card layouts",
+    title: "Thumbnail layout",
+    summary: "Compact image plus actionable message for dense feeds.",
+    tags: ["adaptive cards", "layout", "thumbnail"],
+    deck: deck({
+      title: "Thumbnail card layout",
+      description: "Adaptive Cards thumbnail layout — small image plus title, body, and one action.",
+      tags: ["layout", "thumbnail", "adaptive-cards"],
+      theme: themes.acPattern,
+      slides: [
+        thumbnailLayoutSlide(themes.acPattern),
+        whenToUseSlide({
+          id: "thumbnail-when",
+          title: "Thumbnail — when to use",
+          when: [
+            "Status messages, notifications, or PR updates",
+            "Feeds where many cards stack together",
+            "Narrow and very narrow breakpoints",
+          ],
+          dont: [
+            "The image needs to convey detail (use Hero instead)",
+            "More than three lines of body copy are required",
+            "The action requires a multi-step form",
+          ],
+          theme: themes.acPattern,
+        }),
+        anatomySlide({
+          id: "thumbnail-anatomy",
+          title: "Thumbnail — anatomy",
+          parts: [
+            { label: "Thumbnail", detail: "Small image, square or 4:3, on the leading side" },
+            { label: "Title", detail: "Subheading text with strong weight and accent color" },
+            { label: "Body", detail: "One or two short lines of supporting text" },
+            { label: "Action", detail: "Single button anchored to the trailing side" },
+          ],
+          theme: themes.acPattern,
+        }),
+      ],
+    }),
+  },
+  {
+    id: "ac-layout-list",
+    category: "Card layouts",
+    title: "List layout",
+    summary: "Pick one item from a scannable list of records.",
+    tags: ["adaptive cards", "layout", "list"],
+    deck: deck({
+      title: "List card layout",
+      description: "Adaptive Cards list layout — each row carries an avatar, title, subtitle, and meta.",
+      tags: ["layout", "list", "adaptive-cards"],
+      theme: themes.acPattern,
+      slides: [
+        listLayoutSlide(themes.acPattern),
+        whenToUseSlide({
+          id: "list-when",
+          title: "List — when to use",
+          when: [
+            "Users need to choose one record from many (tasks, tickets, contacts)",
+            "Each row has a consistent shape (avatar + title + meta)",
+            "Total list fits within a single card without scrolling",
+          ],
+          dont: [
+            "Rows have wildly different shapes or lengths",
+            "More than 7 to 10 rows are needed (link to a full view instead)",
+            "Each row has multiple competing actions",
+          ],
+          theme: themes.acPattern,
+        }),
+        anatomySlide({
+          id: "list-anatomy",
+          title: "List — anatomy",
+          parts: [
+            { label: "Avatar", detail: "Square or circular image at the leading edge" },
+            { label: "Title and subtitle", detail: "Subheading + caption stacked vertically" },
+            { label: "Meta", detail: "Right-aligned status, time, or count" },
+            { label: "Selection target", detail: "Tapping a row should fire one consistent action" },
+          ],
+          theme: themes.acPattern,
+        }),
+      ],
+    }),
+  },
+  {
+    id: "ac-layout-digest",
+    category: "Card layouts",
+    title: "Digest layout",
+    summary: "News round-up — three article cards in one glance.",
+    tags: ["adaptive cards", "layout", "digest"],
+    deck: deck({
+      title: "Digest card layout",
+      description: "Adaptive Cards digest layout — three or four article cards aligned in a single row.",
+      tags: ["layout", "digest", "adaptive-cards"],
+      theme: themes.acPattern,
+      slides: [
+        digestLayoutSlide(themes.acPattern),
+        whenToUseSlide({
+          id: "digest-when",
+          title: "Digest — when to use",
+          when: [
+            "Weekly news round-ups, blog roll-ups, or release-note summaries",
+            "Each item shares the same shape (image + title + summary)",
+            "Card width is wide enough for three or four columns",
+          ],
+          dont: [
+            "Items vary in length and require different layouts",
+            "Articles need full body content (link out instead)",
+            "Card collapses to a single column where Hero would be cleaner",
+          ],
+          theme: themes.acPattern,
+        }),
+        anatomySlide({
+          id: "digest-anatomy",
+          title: "Digest — anatomy",
+          parts: [
+            { label: "Article image", detail: "16:9 or 1:1 thumbnail per article" },
+            { label: "Title", detail: "Subheading bolder, accent color, two lines max" },
+            { label: "Summary", detail: "Caption-sized supporting copy, two to three lines" },
+            { label: "Card link", detail: "Whole article tile is the click target" },
+          ],
+          theme: themes.acPattern,
+        }),
+      ],
+    }),
+  },
+  {
+    id: "ac-layout-media",
+    category: "Card layouts",
+    title: "Video and media layout",
+    summary: "Combine a video or audio element with text and one clear action.",
+    tags: ["adaptive cards", "layout", "media"],
+    deck: deck({
+      title: "Video and media card layout",
+      description: "Adaptive Cards media layout — video player with poster, supporting copy, and one action.",
+      tags: ["layout", "media", "video", "adaptive-cards"],
+      theme: themes.acPattern,
+      slides: [
+        mediaLayoutSlide(themes.acPattern),
+        whenToUseSlide({
+          id: "media-when",
+          title: "Media — when to use",
+          when: [
+            "A short video or audio clip is the most efficient way to convey the message",
+            "A poster image keeps the card useful even before playback starts",
+            "The host (Teams, Outlook, custom) supports the Media element",
+          ],
+          dont: [
+            "The clip is longer than three minutes (link to the full asset instead)",
+            "The video has no transcript or captions for accessibility",
+            "The poster has insufficient contrast for any overlaid text",
+          ],
+          theme: themes.acPattern,
+        }),
+        anatomySlide({
+          id: "media-anatomy",
+          title: "Media — anatomy",
+          parts: [
+            { label: "Media element", detail: "Tile.Media with at least one source URL and a poster image" },
+            { label: "Aspect ratio", detail: "16:9 by default; switch to 1:1 for portrait-friendly clips" },
+            { label: "Caption", detail: "One or two lines that summarize what the user will hear or see" },
+            { label: "Action", detail: "Optional transcript link or save-for-later button" },
+          ],
+          theme: themes.acPattern,
+        }),
+      ],
+    }),
+  },
+  {
+    id: "ac-layout-form",
+    category: "Card layouts",
+    title: "Form layout",
+    summary: "Collect a small set of structured inputs to file a task or ticket.",
+    tags: ["adaptive cards", "layout", "form"],
+    deck: deck({
+      title: "Form card layout",
+      description: "Adaptive Cards form layout — labeled inputs plus submit and cancel actions.",
+      tags: ["layout", "form", "adaptive-cards"],
+      theme: themes.acPattern,
+      slides: [
+        formLayoutSlide(themes.acPattern),
+        whenToUseSlide({
+          id: "form-when",
+          title: "Form — when to use",
+          when: [
+            "Three to six inputs that map to a clear back-end record",
+            "Field labels and validation messages stay short",
+            "The card can submit to a connector, Power Automate flow, or webhook",
+          ],
+          dont: [
+            "More than seven inputs (escalate to a task module or full app)",
+            "Inputs depend on each other in a wizard pattern",
+            "File uploads or rich text are required (host support is uneven)",
+          ],
+          theme: themes.acPattern,
+        }),
+        anatomySlide({
+          id: "form-anatomy",
+          title: "Form — anatomy",
+          parts: [
+            { label: "Field label", detail: "Caption-sized accent text directly above each input" },
+            { label: "Input mock", detail: "Container styled emphasis with placeholder body text" },
+            { label: "Layout", detail: "Slide-level grid keeps fields aligned across breakpoints" },
+            { label: "Actions", detail: "Primary submit button accent; cancel stays neutral" },
+          ],
+          theme: themes.acPattern,
+        }),
+      ],
+    }),
+  },
+  {
+    id: "ac-layout-quick-input",
+    category: "Card layouts",
+    title: "Quick input layout",
+    summary: "One prompt, one input, one send — for in-the-moment replies.",
+    tags: ["adaptive cards", "layout", "quick-input"],
+    deck: deck({
+      title: "Quick input card layout",
+      description: "Adaptive Cards quick input layout — single-line response with a send action.",
+      tags: ["layout", "quick-input", "adaptive-cards"],
+      theme: themes.acPattern,
+      slides: [
+        quickInputLayoutSlide(themes.acPattern),
+        whenToUseSlide({
+          id: "quick-input-when",
+          title: "Quick input — when to use",
+          when: [
+            "A single short response is enough (rating, comment, RSVP)",
+            "The interaction sits inline in a chat or notification thread",
+            "The send action posts back to a bot or webhook",
+          ],
+          dont: [
+            "Multiple fields are needed (use Form instead)",
+            "The reply requires structured choices (use a list or chiclets)",
+            "The user must upload a file or attach media",
+          ],
+          theme: themes.acPattern,
+        }),
+        anatomySlide({
+          id: "quick-input-anatomy",
+          title: "Quick input — anatomy",
+          parts: [
+            { label: "Prompt", detail: "Subheading text that frames the question" },
+            { label: "Input row", detail: "Mock input spans most of the row; send action takes the trailing column" },
+            { label: "Send action", detail: "Accent-styled button labeled with the action verb" },
+            { label: "Confirmation", detail: "Replace the input area on submit with a friendly thank-you state" },
+          ],
+          theme: themes.acPattern,
+        }),
+      ],
+    }),
+  },
+  {
+    id: "ac-layout-expandable",
+    category: "Card layouts",
+    title: "Expandable layout",
+    summary: "Lead with the summary; reveal extra detail only on demand.",
+    tags: ["adaptive cards", "layout", "expandable", "progressive disclosure"],
+    deck: deck({
+      title: "Expandable card layout",
+      description: "Adaptive Cards expandable layout — summary plus a show-more region for additional context.",
+      tags: ["layout", "expandable", "progressive-disclosure", "adaptive-cards"],
+      theme: themes.acPattern,
+      slides: [
+        expandableLayoutSlide(themes.acPattern),
+        whenToUseSlide({
+          id: "expandable-when",
+          title: "Expandable — when to use",
+          when: [
+            "Most users only need the summary, but a few need the full detail",
+            "Detail data is read-only (logs, coverage stats, change lists)",
+            "The card can keep both states without re-fetching data",
+          ],
+          dont: [
+            "Detail must change frequently (link to a live view instead)",
+            "Hidden content is critical for the action above",
+            "Hidden region exceeds the card height when expanded",
+          ],
+          theme: themes.acPattern,
+        }),
+        anatomySlide({
+          id: "expandable-anatomy",
+          title: "Expandable — anatomy",
+          parts: [
+            { label: "Summary", detail: "One subheading plus one body line that captures the verdict" },
+            { label: "Toggle action", detail: "Show more / show less button toggles the detail region" },
+            { label: "Detail region", detail: "Container with paired caption labels and body values" },
+            { label: "Default state", detail: "Card always opens collapsed; user choice is not persisted" },
+          ],
+          theme: themes.acPattern,
+        }),
       ],
     }),
   },

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adaptive-slide.dev/schemas/tiles/input-number-tile.schema.json",
+  "title": "Input Number Tile",
+  "description": "A numeric input with optional min/max bounds. Compiles to AC 1.6 Input.Number.",
+  "type": "object",
+  "required": ["type", "id"],
+  "allOf": [{ "$ref": "../tile.schema.json#/$defs/TileBase" }],
+  "properties": {
+    "type": { "const": "Tile.Input.Number" },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique input id — the key under which the value is submitted to the host."
+    },
+    "label": { "type": "string", "description": "Human-readable label rendered above the input." },
+    "placeholder": { "type": "string", "description": "Ghost text shown when empty." },
+    "value": { "type": "number", "description": "Initial value of the input." },
+    "min": { "type": "number", "description": "Inclusive lower bound." },
+    "max": { "type": "number", "description": "Inclusive upper bound." },
+    "isRequired": { "type": "boolean", "default": false },
+    "errorMessage": { "type": "string" }
+  },
+  "unevaluatedProperties": false
+}

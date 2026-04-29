@@ -277,6 +277,64 @@ const TRANSFORMER = (() => {
     return `<div class="tile tile-container" style="padding:12px;border-radius:6px;${cs}${ls}align-items:${va[t.verticalContentAlignment||"top"]};${bg}${mh}">${t.items.map(i=>renderTile(i,th)).join("")}</div>`;
   }
 
+  function renderInputLabel(label, isRequired) {
+    if(!label) return "";
+    const star = isRequired?'<span style="color:#d13438;margin-left:4px;" aria-hidden="true">*</span>':"";
+    return `<label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">${esc(label)}${star}</label>`;
+  }
+
+  function renderInputText(t) {
+    const id = esc(t.id);
+    const lbl = renderInputLabel(t.label, t.isRequired);
+    const ph = t.placeholder?`placeholder="${esc(t.placeholder)}"`:"";
+    const req = t.isRequired?"required":"";
+    const ml = typeof t.maxLength==="number"?`maxlength="${t.maxLength}"`:"";
+    const v = t.value!=null?esc(String(t.value)):"";
+    const bs = "width:100%;padding:8px 10px;border:1px solid rgba(128,128,128,0.4);border-radius:4px;font-family:inherit;font-size:0.9rem;box-sizing:border-box;";
+    const inner = t.isMultiline
+      ? `<textarea name="${id}" id="${id}" ${ph} ${req} ${ml} rows="3" style="${bs}resize:vertical;min-height:72px;">${v}</textarea>`
+      : `<input type="${esc(t.style||"text")}" name="${id}" id="${id}" value="${v}" ${ph} ${req} ${ml} style="${bs}" />`;
+    return `<div class="tile tile-input-text">${lbl}${inner}</div>`;
+  }
+
+  function renderInputNumber(t) {
+    const id = esc(t.id);
+    const lbl = renderInputLabel(t.label, t.isRequired);
+    const ph = t.placeholder?`placeholder="${esc(t.placeholder)}"`:"";
+    const req = t.isRequired?"required":"";
+    const min = typeof t.min==="number"?`min="${t.min}"`:"";
+    const max = typeof t.max==="number"?`max="${t.max}"`:"";
+    const v = typeof t.value==="number"?`value="${t.value}"`:"";
+    const bs = "width:100%;padding:8px 10px;border:1px solid rgba(128,128,128,0.4);border-radius:4px;font-family:inherit;font-size:0.9rem;box-sizing:border-box;";
+    return `<div class="tile tile-input-number">${lbl}<input type="number" name="${id}" id="${id}" ${v} ${ph} ${req} ${min} ${max} style="${bs}" /></div>`;
+  }
+
+  function renderInputChoiceSet(t) {
+    const id = esc(t.id);
+    const lbl = renderInputLabel(t.label, t.isRequired);
+    const req = t.isRequired?"required":"";
+    const style = t.style||"compact";
+    const choices = t.choices||[];
+    const initial = t.value!=null?String(t.value).split(",").map(v=>v.trim()):[];
+    if(style==="expanded") {
+      const it = t.isMultiSelect?"checkbox":"radio";
+      const items = choices.map((c,i)=>{
+        const ck = initial.includes(c.value)?"checked":"";
+        const iid = `${id}_${i}`;
+        return `<label for="${iid}" style="display:flex;gap:8px;align-items:center;padding:6px 0;cursor:pointer;font-size:0.9rem;"><input type="${it}" name="${id}" id="${iid}" value="${esc(c.value)}" ${ck} ${req} /><span>${esc(c.title)}</span></label>`;
+      }).join("");
+      return `<fieldset class="tile tile-input-choiceset" style="border:none;padding:0;margin:0;">${lbl}<div role="group">${items}</div></fieldset>`;
+    }
+    const ph = t.placeholder?`<option value="">${esc(t.placeholder)}</option>`:"";
+    const opts = choices.map(c=>{
+      const sel = initial.includes(c.value)?"selected":"";
+      return `<option value="${esc(c.value)}" ${sel}>${esc(c.title)}</option>`;
+    }).join("");
+    const mu = t.isMultiSelect?"multiple":"";
+    const bs = "width:100%;padding:8px 10px;border:1px solid rgba(128,128,128,0.4);border-radius:4px;font-family:inherit;font-size:0.9rem;background:transparent;box-sizing:border-box;";
+    return `<div class="tile tile-input-choiceset">${lbl}<select name="${id}" id="${id}" ${req} ${mu} style="${bs}">${ph}${opts}</select></div>`;
+  }
+
   function renderTile(tile, theme) {
     if(tile.isVisible===false) return "";
     const sp = tile.spacing?`margin-top:${SP[tile.spacing]||"8px"};`:"";
@@ -291,6 +349,9 @@ const TRANSFORMER = (() => {
       case "Tile.Chart": inner=renderChart(tile,theme);break;
       case "Tile.Media": inner=renderMedia(tile);break;
       case "Tile.Container": inner=renderContainer(tile,theme);break;
+      case "Tile.Input.Text": inner=renderInputText(tile);break;
+      case "Tile.Input.Number": inner=renderInputNumber(tile);break;
+      case "Tile.Input.ChoiceSet": inner=renderInputChoiceSet(tile);break;
       default: inner=`<div style="color:#999;">Unknown tile: ${esc(tile.type)}</div>`;
     }
     return `${sep}<div style="${ws}">${inner}</div>`;

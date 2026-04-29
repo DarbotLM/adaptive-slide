@@ -1,6 +1,7 @@
 import type {
   Deck, Slide, Tile, Theme, LayoutConfig, Background,
   TextTile, ImageTile, CodeTile, ChartTile, MediaTile, ContainerTile,
+  InputTextTile, InputNumberTile, InputChoiceSetTile,
   GridPosition, FreeformPosition,
 } from "./types/index.js";
 
@@ -275,6 +276,69 @@ function renderContainerTile(tile: ContainerTile, theme?: Theme): string {
 
 // --- Main render functions ---
 
+function renderInputLabel(label?: string, isRequired?: boolean): string {
+  if (!label) return "";
+  const star = isRequired ? `<span style="color:#d13438; margin-left:4px;" aria-hidden="true">*</span>` : "";
+  return `<label style="display:block; font-weight:600; font-size:0.85rem; margin-bottom:4px;">${esc(label)}${star}</label>`;
+}
+
+function renderInputTextTile(tile: InputTextTile): string {
+  const id = esc(tile.id);
+  const label = renderInputLabel(tile.label, tile.isRequired);
+  const placeholder = tile.placeholder ? `placeholder="${esc(tile.placeholder)}"` : "";
+  const required = tile.isRequired ? "required" : "";
+  const maxlen = typeof tile.maxLength === "number" ? `maxlength="${tile.maxLength}"` : "";
+  const value = tile.value != null ? esc(String(tile.value)) : "";
+  const baseStyle = "width:100%; padding:8px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; font-family:inherit; font-size:0.9rem; box-sizing:border-box;";
+  const inner = tile.isMultiline
+    ? `<textarea name="${id}" id="${id}" ${placeholder} ${required} ${maxlen} rows="3" style="${baseStyle} resize:vertical; min-height:72px;">${value}</textarea>`
+    : `<input type="${esc(tile.style ?? "text")}" name="${id}" id="${id}" value="${value}" ${placeholder} ${required} ${maxlen} style="${baseStyle}" />`;
+  return `<div class="tile tile-input-text">${label}${inner}</div>`;
+}
+
+function renderInputNumberTile(tile: InputNumberTile): string {
+  const id = esc(tile.id);
+  const label = renderInputLabel(tile.label, tile.isRequired);
+  const placeholder = tile.placeholder ? `placeholder="${esc(tile.placeholder)}"` : "";
+  const required = tile.isRequired ? "required" : "";
+  const min = typeof tile.min === "number" ? `min="${tile.min}"` : "";
+  const max = typeof tile.max === "number" ? `max="${tile.max}"` : "";
+  const value = typeof tile.value === "number" ? `value="${tile.value}"` : "";
+  const baseStyle = "width:100%; padding:8px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; font-family:inherit; font-size:0.9rem; box-sizing:border-box;";
+  return `<div class="tile tile-input-number">${label}<input type="number" name="${id}" id="${id}" ${value} ${placeholder} ${required} ${min} ${max} style="${baseStyle}" /></div>`;
+}
+
+function renderInputChoiceSetTile(tile: InputChoiceSetTile): string {
+  const id = esc(tile.id);
+  const label = renderInputLabel(tile.label, tile.isRequired);
+  const required = tile.isRequired ? "required" : "";
+  const style = tile.style ?? "compact";
+  const choices = tile.choices ?? [];
+  const initial = tile.value != null ? String(tile.value).split(",").map((v) => v.trim()) : [];
+
+  if (style === "expanded") {
+    const inputType = tile.isMultiSelect ? "checkbox" : "radio";
+    const items = choices.map((c, i) => {
+      const checked = initial.includes(c.value) ? "checked" : "";
+      const itemId = `${id}_${i}`;
+      return `<label for="${itemId}" style="display:flex; gap:8px; align-items:center; padding:6px 0; cursor:pointer; font-size:0.9rem;">
+        <input type="${inputType}" name="${id}" id="${itemId}" value="${esc(c.value)}" ${checked} ${required} />
+        <span>${esc(c.title)}</span>
+      </label>`;
+    }).join("");
+    return `<fieldset class="tile tile-input-choiceset" style="border:none; padding:0; margin:0;">${label}<div role="group">${items}</div></fieldset>`;
+  }
+
+  const placeholder = tile.placeholder ? `<option value="">${esc(tile.placeholder)}</option>` : "";
+  const opts = choices.map((c) => {
+    const sel = initial.includes(c.value) ? "selected" : "";
+    return `<option value="${esc(c.value)}" ${sel}>${esc(c.title)}</option>`;
+  }).join("");
+  const multiple = tile.isMultiSelect ? "multiple" : "";
+  const baseStyle = "width:100%; padding:8px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; font-family:inherit; font-size:0.9rem; background:transparent; box-sizing:border-box;";
+  return `<div class="tile tile-input-choiceset">${label}<select name="${id}" id="${id}" ${required} ${multiple} style="${baseStyle}">${placeholder}${opts}</select></div>`;
+}
+
 export function renderTile(tile: Tile, theme?: Theme): string {
   if (tile.isVisible === false) return "";
 
@@ -289,13 +353,16 @@ export function renderTile(tile: Tile, theme?: Theme): string {
 
   let inner: string;
   switch (tile.type) {
-    case "Tile.Text":      inner = renderTextTile(tile, theme); break;
-    case "Tile.Image":     inner = renderImageTile(tile, theme); break;
-    case "Tile.Code":      inner = renderCodeTile(tile, theme); break;
-    case "Tile.Chart":     inner = renderChartTile(tile, theme); break;
-    case "Tile.Media":     inner = renderMediaTile(tile); break;
-    case "Tile.Container": inner = renderContainerTile(tile, theme); break;
-    default:               inner = `<div class="tile tile-unknown" style="color:#999;">Unknown tile type: ${esc((tile as Tile).type)}</div>`;
+    case "Tile.Text":             inner = renderTextTile(tile, theme); break;
+    case "Tile.Image":            inner = renderImageTile(tile, theme); break;
+    case "Tile.Code":             inner = renderCodeTile(tile, theme); break;
+    case "Tile.Chart":            inner = renderChartTile(tile, theme); break;
+    case "Tile.Media":            inner = renderMediaTile(tile); break;
+    case "Tile.Container":        inner = renderContainerTile(tile, theme); break;
+    case "Tile.Input.Text":       inner = renderInputTextTile(tile); break;
+    case "Tile.Input.Number":     inner = renderInputNumberTile(tile); break;
+    case "Tile.Input.ChoiceSet":  inner = renderInputChoiceSetTile(tile); break;
+    default:                      inner = `<div class="tile tile-unknown" style="color:#999;">Unknown tile type: ${esc((tile as Tile).type)}</div>`;
   }
 
   return `${separator}<div style="${wrapStyle}">${inner}</div>`;

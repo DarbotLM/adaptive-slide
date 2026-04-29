@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adaptive-slide.dev/schemas/tiles/input-text-tile.schema.json",
+  "title": "Input Text Tile",
+  "description": "A single-line or multi-line free-text input. Compiles to AC 1.6 Input.Text. Use for short answers, comments, or any free-form user input.",
+  "type": "object",
+  "required": ["type", "id"],
+  "allOf": [{ "$ref": "../tile.schema.json#/$defs/TileBase" }],
+  "properties": {
+    "type": { "const": "Tile.Input.Text" },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique input id — the key under which the value is submitted to the host."
+    },
+    "label": { "type": "string", "description": "Human-readable label rendered above the input." },
+    "placeholder": { "type": "string", "description": "Ghost text shown when empty." },
+    "value": { "type": "string", "description": "Initial value of the input." },
+    "isMultiline": { "type": "boolean", "default": false, "description": "Render as a multi-line text area." },
+    "maxLength": { "type": "integer", "minimum": 1, "description": "Maximum number of characters allowed." },
+    "style": {
+      "type": "string",
+      "enum": ["text", "tel", "url", "email", "password"],
+      "default": "text",
+      "description": "Input style hint — browsers and AC hosts use this to optimize keyboard / validation."
+    },
+    "regex": { "type": "string", "description": "Client-side validation regex (mirrors AC 1.6)." },
+    "isRequired": { "type": "boolean", "default": false, "description": "Block Action.Submit when empty." },
+    "errorMessage": { "type": "string", "description": "Message shown when validation fails." }
+  },
+  "unevaluatedProperties": false
+}

@@ -559,6 +559,58 @@
 }
 
 /* =====================================================================
+   Media tile (Tile.Media — video/audio with poster)
+   ===================================================================== */
+
+.mediaTile {
+  background: #020817;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.mediaPoster {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.78;
+  width: 100%;
+}
+
+.mediaPlayBadge {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  color: #ffffff;
+  display: inline-flex;
+  height: 44px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+}
+
+.mediaSourceLabel {
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 6px;
+  bottom: 0.4rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.4rem;
+  position: absolute;
+  right: 0.4rem;
+  text-transform: uppercase;
+}
+
+/* =====================================================================
    Schema back face
    ===================================================================== */
 
@@ -752,4 +804,80 @@
   .flipInner {
     min-height: 560px;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Input tile mocks (gallery preview only — disabled controls).
+   --------------------------------------------------------------------------- */
+
+.inputMock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-family: inherit;
+}
+
+.inputChoiceFieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.inputLabelMock {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.inputRequiredStar {
+  color: #fda4af;
+  font-weight: 700;
+}
+
+.inputControl {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  font-family: inherit;
+  font-size: 0.82rem;
+  box-sizing: border-box;
+}
+
+.inputControl:disabled {
+  cursor: default;
+  opacity: 0.92;
+}
+
+textarea.inputControl {
+  resize: none;
+  min-height: 56px;
+  line-height: 1.35;
+}
+
+.choiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.choiceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0.15rem 0;
+  cursor: default;
+}
+
+.choiceRow input[type="radio"],
+.choiceRow input[type="checkbox"] {
+  accent-color: var(--slideAccent, #34d399);
+  cursor: default;
 }

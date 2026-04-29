@@ -1,0 +1,359 @@
+{
+  "$schema": "../schemas/deck.schema.json",
+  "type": "AdaptiveDeck",
+  "version": "1.0.0",
+  "metadata": {
+    "title": "Adaptive Slide DSL 101",
+    "description": "An eight-card crash course on the Adaptive Slide DSL: title, six training modules, and a combined validation card with question, rating, feedback, and submit. Credit-granting requires a host submit handler.",
+    "author": "Adaptive Slide",
+    "tags": ["training", "course", "dsl", "input", "validation", "submit"]
+  },
+  "theme": {
+    "name": "Training Course",
+    "primaryColor": "#10b981",
+    "accentColor": "#34d399",
+    "backgroundColor": "#022c22",
+    "fontFamily": "Segoe UI, sans-serif",
+    "darkMode": true
+  },
+  "defaults": {
+    "layout": "stack",
+    "transition": "fade",
+    "padding": "default"
+  },
+  "slides": [
+    {
+      "type": "AdaptiveSlide",
+      "id": "card-1-title",
+      "title": "Title — Adaptive Slide DSL 101",
+      "background": {
+        "gradient": {
+          "type": "linear",
+          "colors": ["#022c22", "#065f46", "#10b981"],
+          "angle": 145
+        }
+      },
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Adaptive Slide DSL 101",
+          "style": "heading",
+          "size": "extraLarge",
+          "weight": "bolder",
+          "color": "light",
+          "horizontalAlignment": "center",
+          "spacing": "extraLarge"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "An eight-card crash course on authoring schema-driven decks",
+          "style": "subheading",
+          "color": "light",
+          "horizontalAlignment": "center"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Six modules · One validation card · Earns completion credit",
+          "style": "caption",
+          "color": "light",
+          "horizontalAlignment": "center",
+          "spacing": "large"
+        }
+      ],
+      "notes": "Welcome. Set expectations: 6 short modules then a single validation card."
+    },
+    {
+      "type": "AdaptiveSlide",
+      "id": "card-2-module-overview",
+      "title": "Module 1 — What is Adaptive Slide?",
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Module 1 of 6",
+          "style": "caption",
+          "color": "accent",
+          "weight": "bolder"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "What is Adaptive Slide?",
+          "style": "heading",
+          "size": "large"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Adaptive Slide is a JSON-first DSL that authors decks as schema-validated documents and compiles each slide to a fully compliant Adaptive Card 1.6 payload. One source, many surfaces: Teams, Outlook, web, MCP App.",
+          "style": "body"
+        },
+        {
+          "type": "Tile.Container",
+          "style": "accent",
+          "items": [
+            {
+              "type": "Tile.Text",
+              "text": "Key idea — your slide is the Adaptive Card body. The transformer fills in the rest.",
+              "style": "body"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AdaptiveSlide",
+      "id": "card-3-module-structure",
+      "title": "Module 2 — Decks, Slides, Tiles",
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Module 2 of 6",
+          "style": "caption",
+          "color": "accent",
+          "weight": "bolder"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Decks, Slides, Tiles",
+          "style": "heading",
+          "size": "large"
+        },
+        {
+          "type": "Tile.Code",
+          "language": "json",
+          "title": "minimal.deck.json",
+          "code": "{\n  \"type\": \"AdaptiveDeck\",\n  \"version\": \"1.0.0\",\n  \"slides\": [\n    {\n      \"type\": \"AdaptiveSlide\",\n      \"body\": [\n        { \"type\": \"Tile.Text\", \"text\": \"Hello!\" }\n      ]\n    }\n  ]\n}",
+          "showLineNumbers": true,
+          "theme": "dark"
+        }
+      ]
+    },
+    {
+      "type": "AdaptiveSlide",
+      "id": "card-4-module-layouts",
+      "title": "Module 3 — Layouts",
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Module 3 of 6",
+          "style": "caption",
+          "color": "accent",
+          "weight": "bolder"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Layouts",
+          "style": "heading",
+          "size": "large"
+        },
+        {
+          "type": "Tile.Container",
+          "style": "emphasis",
+          "items": [
+            {
+              "type": "Tile.Text",
+              "text": "**stack** — vertical flow (default). Best for long-form reading.",
+              "style": "body"
+            },
+            {
+              "type": "Tile.Text",
+              "text": "**grid** — N columns, with gridPosition per tile. Best for dashboards.",
+              "style": "body"
+            },
+            {
+              "type": "Tile.Text",
+              "text": "**freeform** — absolute positioning. Best for hero slides and infographics.",
+              "style": "body"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AdaptiveSlide",
+      "id": "card-5-module-tiles",
+      "title": "Module 4 — Tile Types",
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Module 4 of 6",
+          "style": "caption",
+          "color": "accent",
+          "weight": "bolder"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Tile Types",
+          "style": "heading",
+          "size": "large"
+        },
+        {
+          "type": "Tile.Container",
+          "layout": "row",
+          "style": "emphasis",
+          "items": [
+            {
+              "type": "Tile.Text",
+              "text": "**Content** — Text, Image, Code, Chart, Media, Container.",
+              "style": "body"
+            },
+            {
+              "type": "Tile.Text",
+              "text": "**Inputs** — Input.Text, Input.Number, Input.ChoiceSet (this card 8 uses all three).",
+              "style": "body"
+            }
+          ]
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Every tile compiles to a real AC 1.6 element. There is no proprietary surface — your deck runs anywhere a card runs.",
+          "style": "caption",
+          "spacing": "medium"
+        }
+      ]
+    },
+    {
+      "type": "AdaptiveSlide",
+      "id": "card-6-module-themes",
+      "title": "Module 5 — Themes, Transitions, Actions",
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Module 5 of 6",
+          "style": "caption",
+          "color": "accent",
+          "weight": "bolder"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Themes, Transitions, Actions",
+          "style": "heading",
+          "size": "large"
+        },
+        {
+          "type": "Tile.Container",
+          "style": "good",
+          "items": [
+            {
+              "type": "Tile.Text",
+              "text": "**Theme** — primaryColor, accentColor, backgroundColor, fontFamily, darkMode. Applies deck-wide.",
+              "style": "body"
+            },
+            {
+              "type": "Tile.Text",
+              "text": "**Transitions** — fade, slide-left, slide-right, slide-up, zoom, none. Per-slide override.",
+              "style": "body"
+            },
+            {
+              "type": "Tile.Text",
+              "text": "**Actions** — OpenUrl, Submit (host-handled), GoToSlide, NextSlide, PrevSlide.",
+              "style": "body"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AdaptiveSlide",
+      "id": "card-7-module-transform",
+      "title": "Module 6 — AC 1.6 Transformation",
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Module 6 of 6",
+          "style": "caption",
+          "color": "accent",
+          "weight": "bolder"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "AC 1.6 Transformation",
+          "style": "heading",
+          "size": "large"
+        },
+        {
+          "type": "Tile.Code",
+          "language": "javascript",
+          "title": "transform.js",
+          "code": "import { slideToAdaptiveCard } from \"adaptive-slide\";\n\nconst card = slideToAdaptiveCard(deck.slides[7], deck);\n// card now has Input.ChoiceSet, Input.Text, Action.Submit\n// Send to Teams, Outlook, or any AC 1.6 host.",
+          "showLineNumbers": false,
+          "theme": "dark"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "The next card validates what you've learned. Answer the question, rate the training, and submit.",
+          "style": "caption",
+          "spacing": "medium"
+        }
+      ]
+    },
+    {
+      "type": "AdaptiveSlide",
+      "id": "card-8-validation",
+      "title": "Validation — Earn Credit",
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Validation",
+          "style": "heading",
+          "size": "large"
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Answer the question, rate the training, and tell us what to improve. Submit to earn completion credit.",
+          "style": "body",
+          "spacing": "small"
+        },
+        {
+          "type": "Tile.Input.ChoiceSet",
+          "id": "quizAnswer",
+          "label": "1. Which of these is NOT an Adaptive Slide tile type?",
+          "style": "expanded",
+          "isRequired": true,
+          "errorMessage": "Pick the option that does not exist in the DSL.",
+          "choices": [
+            { "title": "Tile.Text", "value": "text" },
+            { "title": "Tile.Image", "value": "image" },
+            { "title": "Tile.Button", "value": "button" },
+            { "title": "Tile.Container", "value": "container" }
+          ],
+          "spacing": "medium"
+        },
+        {
+          "type": "Tile.Input.ChoiceSet",
+          "id": "courseRating",
+          "label": "2. How clear was this training? (1 = Poor, 5 = Excellent)",
+          "style": "expanded",
+          "isRequired": true,
+          "errorMessage": "Pick a rating from 1 to 5.",
+          "choices": [
+            { "title": "1 — Poor", "value": "1" },
+            { "title": "2 — Fair", "value": "2" },
+            { "title": "3 — Good", "value": "3" },
+            { "title": "4 — Great", "value": "4" },
+            { "title": "5 — Excellent", "value": "5" }
+          ],
+          "spacing": "medium"
+        },
+        {
+          "type": "Tile.Input.Text",
+          "id": "feedbackComment",
+          "label": "3. What can we improve? (optional)",
+          "placeholder": "One or two sentences is plenty.",
+          "isMultiline": true,
+          "maxLength": 500,
+          "spacing": "medium"
+        }
+      ],
+      "actions": [
+        {
+          "type": "Action.Submit",
+          "title": "Complete and get credit",
+          "data": {
+            "courseId": "training-dsl-101",
+            "action": "complete-and-credit"
+          }
+        }
+      ],
+      "notes": "Submit is host-handled. Hosts (Teams, Outlook, MCP App) receive the inputs payload (quizAnswer, courseRating, feedbackComment) plus the static data (courseId, action) to grant credit."
+    }
+  ]
+}

@@ -14,7 +14,10 @@
     { "$ref": "tiles/code-tile.schema.json" },
     { "$ref": "tiles/chart-tile.schema.json" },
     { "$ref": "tiles/media-tile.schema.json" },
-    { "$ref": "tiles/container-tile.schema.json" }
+    { "$ref": "tiles/container-tile.schema.json" },
+    { "$ref": "tiles/input-text-tile.schema.json" },
+    { "$ref": "tiles/input-number-tile.schema.json" },
+    { "$ref": "tiles/input-choice-set-tile.schema.json" }
   ],
   "$defs": {
     "TileBase": {
