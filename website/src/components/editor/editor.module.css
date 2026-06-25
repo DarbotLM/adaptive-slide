@@ -1,0 +1,419 @@
+/* =====================================================================
+   Inspector & editor controls
+   ===================================================================== */
+
+.inspector {
+  background: rgba(8, 14, 28, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  color: #e6f1fb;
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  position: sticky;
+  top: 1rem;
+  font-size: 0.8rem;
+}
+
+.inspectorHeader {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.inspectorTitle {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+  color: #50e6ff;
+}
+
+.inspectorTabs {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  display: flex;
+  gap: 0;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.inspectorTab {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #c7e2f7;
+  cursor: pointer;
+  flex: 1;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.4rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.inspectorTab:hover {
+  color: #ffffff;
+}
+
+.inspectorTabActive {
+  background: rgba(80, 230, 255, 0.18);
+  color: #ffffff;
+}
+
+.inspectorBody {
+  display: grid;
+  gap: 0.85rem;
+  max-height: calc(100vh - 8rem);
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.fieldGroupTitle {
+  align-items: center;
+  color: #e6f1fb;
+  display: flex;
+  font-size: 0.62rem;
+  font-weight: 700;
+  gap: 0.4rem;
+  letter-spacing: 0.08em;
+  margin: 0.2rem 0 0;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.fieldGroupTitle::after {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.2), transparent);
+  content: "";
+  flex: 1;
+  height: 1px;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.fieldLabel {
+  align-items: center;
+  color: #c7e2f7;
+  display: flex;
+  font-size: 0.68rem;
+  font-weight: 700;
+  gap: 0.35rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.fieldHelp {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.65rem;
+  margin-top: 0.1rem;
+}
+
+.input,
+.textarea,
+.select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.55rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: #50e6ff;
+  outline: none;
+}
+
+.textarea {
+  min-height: 64px;
+  resize: vertical;
+}
+
+.colorRow {
+  align-items: center;
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: 2.4rem 1fr;
+}
+
+.colorSwatch {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  cursor: pointer;
+  height: 1.9rem;
+  padding: 0;
+  width: 100%;
+}
+
+.colorSwatch::-webkit-color-swatch {
+  border: none;
+}
+
+.toggle {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.toggle input {
+  accent-color: #50e6ff;
+  cursor: pointer;
+}
+
+.pillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.pillRow button {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: #c7e2f7;
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  text-transform: capitalize;
+}
+
+.pillRow button:hover {
+  border-color: #50e6ff;
+  color: #ffffff;
+}
+
+.pillRow button.pillActive {
+  background: rgba(80, 230, 255, 0.22);
+  border-color: #50e6ff;
+  color: #ffffff;
+}
+
+.previewBadge {
+  background: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  border-radius: 999px;
+  color: #fbbf24;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 0.05rem 0.4rem;
+  text-transform: uppercase;
+}
+
+.gridTwo {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.gridThree {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.tileTypeBadge {
+  align-items: center;
+  background: rgba(80, 230, 255, 0.16);
+  border: 1px solid rgba(80, 230, 255, 0.4);
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.62rem;
+  font-weight: 800;
+  gap: 0.35rem;
+  letter-spacing: 0.04em;
+  padding: 0.18rem 0.55rem;
+  text-transform: uppercase;
+}
+
+.toolbar {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: flex-end;
+  padding: 0.35rem;
+}
+
+.toolbar button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  color: #e6f1fb;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.3rem 0.55rem;
+}
+
+.toolbar button:hover:not(:disabled) {
+  border-color: #50e6ff;
+  color: #ffffff;
+}
+
+.toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.toolbarDanger {
+  border-color: rgba(253, 164, 175, 0.4) !important;
+  color: #fda4af !important;
+}
+
+.toolbarDanger:hover:not(:disabled) {
+  background: rgba(253, 164, 175, 0.18) !important;
+  border-color: #fda4af !important;
+  color: #ffffff !important;
+}
+
+.dirtyDot {
+  background: #fbbf24;
+  border-radius: 50%;
+  display: inline-block;
+  height: 7px;
+  width: 7px;
+}
+
+.resetButton {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  color: #e6f1fb;
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.resetButton:hover:not(:disabled) {
+  border-color: #fda4af;
+  color: #ffffff;
+}
+
+.resetButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.emptyState {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.78rem;
+  font-style: italic;
+  padding: 1.2rem 0.5rem;
+  text-align: center;
+}
+
+.choiceList {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.choiceRow {
+  align-items: center;
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: 1fr 1fr auto;
+}
+
+.choiceRow button {
+  background: transparent;
+  border: 1px solid rgba(253, 164, 175, 0.4);
+  border-radius: 4px;
+  color: #fda4af;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.4rem;
+}
+
+.choiceRow button:hover {
+  background: rgba(253, 164, 175, 0.18);
+  color: #ffffff;
+}
+
+.smallButton {
+  background: rgba(80, 230, 255, 0.13);
+  border: 1px solid rgba(80, 230, 255, 0.4);
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.3rem 0.6rem;
+}
+
+.smallButton:hover {
+  background: rgba(80, 230, 255, 0.22);
+}
+
+.addPicker {
+  background: rgba(8, 14, 28, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.65rem;
+}
+
+.addPickerGrid {
+  display: grid;
+  gap: 0.3rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.addPickerGrid button {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  color: #e6f1fb;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.4rem 0.55rem;
+  text-align: left;
+}
+
+.addPickerGrid button:hover {
+  border-color: #50e6ff;
+  color: #ffffff;
+}
+
+.numberInput {
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .inspector {
+    position: static;
+  }
+  .inspectorBody {
+    max-height: none;
+  }
+}

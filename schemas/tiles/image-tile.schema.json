@@ -2,12 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://adaptive-slide.dev/schemas/tiles/image-tile.schema.json",
   "title": "Image Tile",
-  "description": "A tile for displaying images. Maps to Adaptive Cards Image element.",
+  "description": "A tile for displaying images and photos. Maps to Adaptive Cards Image element.",
   "type": "object",
   "required": ["type", "url"],
   "allOf": [{ "$ref": "../tile.schema.json#/$defs/TileBase" }],
   "properties": {
-    "type": { "const": "Tile.Image" },
+    "type": {
+      "type": "string",
+      "enum": ["Tile.Image", "Tile.Photo"],
+      "description": "Tile.Image is the general image element; Tile.Photo is a semantic alias optimized for photo presentation"
+    },
     "url": {
       "type": "string",
       "format": "uri",
@@ -39,6 +43,31 @@
     "caption": {
       "type": "string",
       "description": "Optional caption displayed below the image"
+    },
+    "style": {
+      "type": "string",
+      "enum": ["default", "photo", "avatar", "logo"],
+      "default": "default",
+      "description": "Presentation style. avatar maps to Adaptive Cards Image.style=person."
+    },
+    "fit": {
+      "type": "string",
+      "enum": ["contain", "cover", "fill", "none", "scale-down"],
+      "description": "Object-fit behavior for HTML rendering"
+    },
+    "height": {
+      "type": "string",
+      "description": "CSS/Adaptive Cards image height, such as '180px'"
+    },
+    "captionPosition": {
+      "type": "string",
+      "enum": ["bottom", "overlay"],
+      "default": "bottom",
+      "description": "Caption placement for HTML rendering"
+    },
+    "borderRadius": {
+      "type": "string",
+      "description": "CSS border-radius override for HTML rendering"
     }
   },
   "unevaluatedProperties": false

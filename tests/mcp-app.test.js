@@ -48,6 +48,34 @@ describe("Transformer", () => {
     assert.ok(html.includes("tile-chart"));
   });
 
+  it("renders expanded chart elements", () => {
+    const pie = {
+      type: "Tile.PieChart",
+      data: { labels: ["A", "B"], datasets: [{ values: [30, 70] }] },
+    };
+    const line = {
+      type: "Tile.LineGraph",
+      data: { labels: ["Jan", "Feb"], datasets: [{ values: [4, 9] }] },
+    };
+    assert.ok(renderTile(pie).includes("conic-gradient"));
+    assert.ok(renderTile(line).includes("<svg"));
+  });
+
+  it("renders a photo tile with overlay caption", () => {
+    const tile = {
+      type: "Tile.Photo",
+      url: "https://example.com/photo.jpg",
+      altText: "photo",
+      aspectRatio: "4:3",
+      caption: "Field visit",
+      captionPosition: "overlay",
+    };
+    const html = renderTile(tile);
+    assert.ok(html.includes("tile-image"));
+    assert.ok(html.includes("object-fit:cover"));
+    assert.ok(html.includes("Field visit"));
+  });
+
   it("renders a container tile with nested tiles", () => {
     const tile = {
       type: "Tile.Container",

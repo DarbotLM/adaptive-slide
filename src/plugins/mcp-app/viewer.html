@@ -211,10 +211,19 @@ const TRANSFORMER = (() => {
   function renderImage(t) {
     const al = t.horizontalAlignment||"center";
     const sm = {auto:"max-width:100%",stretch:"width:100%",small:"max-width:120px",medium:"max-width:300px",large:"max-width:500px"};
-    const ss = sm[t.size||"auto"];
+    const sty = t.style||(t.type==="Tile.Photo"?"photo":"default");
+    const ss = t.size?sm[t.size]:(t.type==="Tile.Photo"?"width:100%":sm.auto);
+    const fit = t.fit||(sty==="photo"?"cover":"contain");
+    const radius = t.borderRadius||(sty==="avatar"?"999px":sty==="logo"?"0":sty==="photo"?"10px":"4px");
     const bg = t.backgroundColor?`background:${t.backgroundColor};`:"";
-    const cap = t.caption?`<figcaption style="text-align:center;font-size:0.85rem;color:#666;margin-top:4px;">${esc(t.caption)}</figcaption>`:"";
-    return `<figure class="tile tile-image" style="text-align:${al};margin:0;${bg}"><img src="${esc(t.url)}" alt="${esc(t.altText||"")}" style="${ss};height:auto;border-radius:4px;" />${cap}</figure>`;
+    const aspect = t.aspectRatio?`aspect-ratio:${t.aspectRatio.replace(":","/")};`:"";
+    const h = t.height?`height:${t.height};`:"";
+    const frame = Boolean(aspect||h||t.captionPosition==="overlay");
+    const img = `<img src="${esc(t.url)}" alt="${esc(t.altText||"")}" style="${frame?"width:100%;height:100%;":`${ss};height:auto;`}object-fit:${fit};border-radius:${radius};display:block;" />`;
+    const over = t.caption&&t.captionPosition==="overlay"?`<figcaption style="position:absolute;left:0;right:0;bottom:0;padding:8px 10px;color:white;background:linear-gradient(transparent, rgba(0,0,0,0.72));font-size:0.85rem;text-align:left;">${esc(t.caption)}</figcaption>`:"";
+    const cap = t.caption&&t.captionPosition!=="overlay"?`<figcaption style="text-align:center;font-size:0.85rem;color:#666;margin-top:4px;">${esc(t.caption)}</figcaption>`:"";
+    const body = frame?`<div style="${ss};${aspect}${h}overflow:hidden;position:relative;border-radius:${radius};">${img}${over}</div>`:img;
+    return `<figure class="tile tile-image" style="text-align:${al};margin:0;${bg}">${body}${cap}</figure>`;
   }
 
   function renderCode(t, th) {
@@ -233,25 +242,48 @@ const TRANSFORMER = (() => {
 
   function renderChart(t, th) {
     const colors = t.colors||["#0078d4","#50e6ff","#ff8c00","#107c10","#d13438","#5c2d91"];
-    const max = Math.max(...t.data.datasets.flatMap(d=>d.values),1);
+    const ct = normChart(t);
     const title = t.title?`<div style="font-weight:600;margin-bottom:8px;">${esc(t.title)}</div>`:"";
-    if (t.chartType==="bar") {
+    if (ct==="bar") {
+      const max = Math.max(...t.data.datasets.flatMap(d=>d.values.map(v=>Math.max(v,0))),1);
+      if (t.orientation==="horizontal"||t.chartType==="horizontalBar") {
+        const rows = t.data.labels.map((lb,i)=>`<div style="display:grid;gap:4px;">${t.data.datasets.map((ds,di)=>{const v=ds.values[i]||0;const p=Math.max((v/max)*100,0);const c=ds.color||colors[di%colors.length];const s=t.data.datasets.length>1&&ds.label?` ${esc(ds.label)}`:"";return `<div style="display:grid;grid-template-columns:minmax(72px,auto) 1fr minmax(36px,auto);gap:8px;align-items:center;"><span style="font-size:0.75rem;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(lb)}${s}</span><span style="height:10px;background:rgba(128,128,128,0.18);border-radius:999px;overflow:hidden;"><span style="display:block;width:${p}%;height:100%;background:${c};border-radius:999px;"></span></span><span style="font-size:0.75rem;color:#666;text-align:right;">${v}</span></div>`;}).join("")}</div>`).join("");
+        const leg = t.showLegend!==false?renderLeg(t.data.datasets,colors):"";
+        return `<div class="tile tile-chart">${title}<div style="display:grid;gap:8px;">${rows}</div>${leg}</div>`;
+      }
       const bg = t.data.labels.map((lb,i)=>{
-        const bars = t.data.datasets.map((ds,di)=>{const v=ds.values[i]||0;const p=(v/max)*100;const c=ds.color||colors[di%colors.length];return `<div style="height:${p}%;background:${c};flex:1;border-radius:3px 3px 0 0;min-width:16px;" title="${(ds.label||"")}: ${v}"></div>`;}).join("");
+        const bars = t.data.datasets.map((ds,di)=>{const v=ds.values[i]||0;const p=Math.max((v/max)*100,0);const c=ds.color||colors[di%colors.length];return `<div style="height:${p}%;background:${c};flex:1;border-radius:3px 3px 0 0;min-width:16px;" title="${esc(ds.label||"")}: ${v}"></div>`;}).join("");
         return `<div style="display:flex;flex-direction:column;align-items:stretch;gap:2px;flex:1;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;">${bars}</div><div style="text-align:center;font-size:0.75rem;color:#888;margin-top:4px;">${esc(lb)}</div></div>`;
       }).join("");
       const leg = t.showLegend!==false?renderLeg(t.data.datasets,colors):"";
       return `<div class="tile tile-chart">${title}<div style="display:flex;gap:8px;align-items:flex-end;">${bg}</div>${leg}</div>`;
     }
-    if (t.chartType==="pie"||t.chartType==="donut") {
-      const tot = t.data.datasets[0]?.values.reduce((a,b)=>a+b,0)||1;
-      let cum=0;const sl=t.data.datasets[0]?.values.map((v,i)=>{const p=v/tot;const s=cum*360;cum+=p;const e=cum*360;return `${colors[i%colors.length]} ${s}deg ${e}deg`;});
-      const hole = t.chartType==="donut"?", radial-gradient(circle, var(--bg) 40%, transparent 40%)":"";
+    if (ct==="pie"||ct==="donut") {
+      const vals = t.data.datasets[0]?.values.map(v=>Math.max(v,0))||[];
+      const tot = vals.reduce((a,b)=>a+b,0)||1;
+      let cum=0;const sl=vals.map((v,i)=>{const p=v/tot;const s=cum*360;cum+=p;const e=cum*360;return `${colors[i%colors.length]} ${s}deg ${e}deg`;});
+      const hs = Math.max(0,Math.min(t.holeSize||45,80));
+      const bg = ct==="donut"?`radial-gradient(circle, var(--bg) 0 ${hs}%, transparent ${hs+1}%), conic-gradient(${sl.join(", ")})`:`conic-gradient(${sl.join(", ")})`;
       const leg = t.showLegend!==false?renderPieLeg(t.data.labels,colors):"";
-      return `<div class="tile tile-chart">${title}<div style="width:150px;height:150px;border-radius:50%;background:conic-gradient(${(sl||[]).join(", ")})${hole};margin:0 auto;"></div>${leg}</div>`;
+      return `<div class="tile tile-chart">${title}<div style="width:150px;height:150px;border-radius:50%;background:${bg};margin:0 auto;"></div>${leg}</div>`;
     }
-    const rows = t.data.labels.map((lb,i)=>`<tr><td style="padding:4px 8px;">${esc(lb)}</td>${t.data.datasets.map(ds=>`<td style="padding:4px 8px;">${ds.values[i]||0}</td>`).join("")}</tr>`).join("");
-    return `<div class="tile tile-chart">${title}<table style="width:100%;border-collapse:collapse;font-size:0.85rem;"><tr><th></th>${t.data.datasets.map(ds=>`<th style="padding:4px 8px;">${esc(ds.label||"")}</th>`).join("")}</tr>${rows}</table></div>`;
+    const w=360,h=180,pad=24,vals=t.data.datasets.flatMap(d=>d.values),min=Math.min(0,...vals),max=Math.max(1,...vals),range=max-min||1,labels=t.data.labels;
+    const x=i=>labels.length<=1?w/2:pad+(i/(labels.length-1))*(w-pad*2), y=v=>h-pad-((v-min)/range)*(h-pad*2), base=y(0);
+    const grid=t.showGrid===false?"":[0,.25,.5,.75,1].map(s=>{const yy=pad+s*(h-pad*2);return `<line x1="${pad}" y1="${yy}" x2="${w-pad}" y2="${yy}" stroke="rgba(128,128,128,0.22)" stroke-width="1" />`;}).join("");
+    const series=t.data.datasets.map((ds,di)=>{const c=ds.color||colors[di%colors.length];const pts=labels.map((_,i)=>`${x(i)},${y(ds.values[i]||0)}`).join(" ");if(ct==="scatter")return labels.map((_,i)=>`<circle cx="${x(i)}" cy="${y(ds.values[i]||0)}" r="4" fill="${c}" />`).join("");const area=ct==="area"?`<polygon points="${x(0)},${base} ${pts} ${x(labels.length-1)},${base}" fill="${c}" opacity="0.22" />`:"";return `${area}<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />`;}).join("");
+    const xls=labels.map((lb,i)=>labels.length>6&&i!==0&&i!==labels.length-1?"":`<text x="${x(i)}" y="${h-5}" text-anchor="middle" font-size="10" fill="#777">${esc(lb)}</text>`).join("");
+    const leg=t.showLegend!==false?renderLeg(t.data.datasets,colors):"";
+    return `<div class="tile tile-chart">${title}<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(t.title||ct+" chart")}" style="width:100%;aspect-ratio:${(t.aspectRatio||"16:9").replace(":","/")};max-height:220px;">${grid}<line x1="${pad}" y1="${base}" x2="${w-pad}" y2="${base}" stroke="rgba(128,128,128,0.35)" stroke-width="1" />${series}${xls}</svg>${leg}</div>`;
+  }
+
+  function normChart(t) {
+    if(t.type==="Tile.BarGraph")return"bar";
+    if(t.type==="Tile.PieChart")return t.chartType==="donut"||t.chartType==="donutchart"?"donut":"pie";
+    if(t.type==="Tile.DonutChart")return"donut";
+    if(t.type==="Tile.LineGraph")return"line";
+    if(t.type==="Tile.AreaChart")return"area";
+    if(t.type==="Tile.ScatterPlot")return"scatter";
+    return {bar:"bar",bargraph:"bar",horizontalBar:"bar",line:"line",linegraph:"line",pie:"pie",piechart:"pie",donut:"donut",donutchart:"donut",area:"area",areachart:"area",scatter:"scatter",scatterplot:"scatter"}[t.chartType]||"bar";
   }
 
   function renderLeg(ds,c){return `<div style="margin-top:8px;">${ds.map((d,i)=>`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;"><span style="width:10px;height:10px;background:${d.color||c[i%c.length]};border-radius:2px;"></span><span style="font-size:0.75rem;">${esc(d.label||"")}</span></span>`).join("")}</div>`;}
@@ -344,9 +376,16 @@ const TRANSFORMER = (() => {
     let inner;
     switch(tile.type){
       case "Tile.Text": inner=renderText(tile,theme);break;
-      case "Tile.Image": inner=renderImage(tile);break;
+      case "Tile.Image":
+      case "Tile.Photo": inner=renderImage(tile);break;
       case "Tile.Code": inner=renderCode(tile,theme);break;
-      case "Tile.Chart": inner=renderChart(tile,theme);break;
+      case "Tile.Chart":
+      case "Tile.BarGraph":
+      case "Tile.PieChart":
+      case "Tile.DonutChart":
+      case "Tile.LineGraph":
+      case "Tile.AreaChart":
+      case "Tile.ScatterPlot": inner=renderChart(tile,theme);break;
       case "Tile.Media": inner=renderMedia(tile);break;
       case "Tile.Container": inner=renderContainer(tile,theme);break;
       case "Tile.Input.Text": inner=renderInputText(tile);break;

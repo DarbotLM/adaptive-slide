@@ -13,12 +13,12 @@ Complete reference for all Adaptive Slide JSON Schemas.
 
 | Property | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
-| `$schema` | string | ✅ | — | Schema URI |
-| `type` | `"AdaptiveDeck"` | ✅ | — | Type discriminator |
-| `version` | string (semver) | ✅ | — | Deck format version |
+| `$schema` | string | Yes | — | Schema URI |
+| `type` | `"AdaptiveDeck"` | Yes | — | Type discriminator |
+| `version` | string (semver) | Yes | — | Deck format version |
 | `metadata` | [DeckMetadata](#deckmetadata) | — | — | Presentation metadata |
 | `theme` | [Theme](#theme) | — | — | Visual theme |
-| `slides` | [AdaptiveSlide](#slide--adaptiveslide)[] | ✅ | — | Slide array (≥1) |
+| `slides` | [AdaptiveSlide](#slide--adaptiveslide)[] | Yes | — | Slide array (≥1) |
 | `defaults` | [SlideDefaults](#slidedefaults) | — | — | Default slide settings |
 
 ### DeckMetadata
@@ -63,14 +63,14 @@ Complete reference for all Adaptive Slide JSON Schemas.
 
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
-| `type` | `"AdaptiveSlide"` | ✅ | Type discriminator |
+| `type` | `"AdaptiveSlide"` | Yes | Type discriminator |
 | `id` | string | — | Unique slide ID |
 | `title` | string | — | Slide title |
 | `notes` | string | — | Speaker notes |
 | `layout` | [LayoutConfig](#layoutconfig) | — | Layout configuration |
 | `background` | [Background](#background) | — | Background settings |
 | `transition` | enum | — | Entry transition |
-| `body` | [AdaptiveTile](#tiles)[] | ✅ | Tile array (the bucket) |
+| `body` | [AdaptiveTile](#tiles)[] | Yes | Tile array (the bucket) |
 | `actions` | [Action](#actions)[] | — | Slide-level actions |
 
 ### LayoutConfig
@@ -123,7 +123,7 @@ All tiles share these base properties:
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `text` | string | — | Text content (markdown subset) ✅ |
+| `text` | string | — | Text content (markdown subset) |
 | `style` | enum | `"body"` | heading, subheading, body, caption, quote |
 | `size` | enum | `"default"` | Text size |
 | `weight` | enum | `"default"` | Font weight |
@@ -135,19 +135,25 @@ All tiles share these base properties:
 
 ---
 
-### `Tile.Image`
+### `Tile.Image` / `Tile.Photo`
 
 **Schema:** [`schemas/tiles/image-tile.schema.json`](../../schemas/tiles/image-tile.schema.json)
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `url` | URI | — | Image URL ✅ |
+| `type` | enum | — | `Tile.Image` or semantic photo alias `Tile.Photo` |
+| `url` | URI | — | Image URL |
 | `altText` | string | — | Accessible alt text |
 | `size` | enum | `"auto"` | Image sizing |
 | `horizontalAlignment` | enum | `"center"` | Alignment |
 | `backgroundColor` | string | — | Background behind image |
 | `aspectRatio` | string | — | Ratio constraint (e.g. `"16:9"`) |
 | `caption` | string | — | Caption text |
+| `style` | enum | `"default"` | default, photo, avatar, logo |
+| `fit` | enum | — | contain, cover, fill, none, scale-down |
+| `height` | string | — | CSS/Adaptive Cards image height |
+| `captionPosition` | enum | `"bottom"` | bottom or overlay |
+| `borderRadius` | string | — | CSS border radius override |
 
 ---
 
@@ -157,7 +163,7 @@ All tiles share these base properties:
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `code` | string | — | Source code ✅ |
+| `code` | string | — | Source code |
 | `language` | string | — | Language for highlighting |
 | `showLineNumbers` | boolean | `true` | Show line numbers |
 | `startLineNumber` | integer | `1` | First line number |
@@ -168,19 +174,22 @@ All tiles share these base properties:
 
 ---
 
-### `Tile.Chart`
+### `Tile.Chart` and semantic chart aliases
 
 **Schema:** [`schemas/tiles/chart-tile.schema.json`](../../schemas/tiles/chart-tile.schema.json)
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `chartType` | enum | — | bar, line, pie, donut, area, scatter ✅ |
+| `type` | enum | — | `Tile.Chart`, `Tile.BarGraph`, `Tile.PieChart`, `Tile.DonutChart`, `Tile.LineGraph`, `Tile.AreaChart`, or `Tile.ScatterPlot` |
+| `chartType` | enum | — | bar, bargraph, horizontalBar, line, linegraph, pie, piechart, donut, donutchart, area, areachart, scatter, scatterplot. Required only for `Tile.Chart`; semantic aliases infer it. |
 | `title` | string | — | Chart title |
-| `data` | [ChartData](#chartdata) | — | Chart dataset ✅ |
+| `data` | [ChartData](#chartdata) | — | Chart dataset |
 | `showLegend` | boolean | `true` | Show legend |
 | `showGrid` | boolean | `true` | Show grid lines |
 | `colors` | string[] | — | Custom color palette |
 | `aspectRatio` | string | `"16:9"` | Aspect ratio |
+| `orientation` | enum | `"vertical"` | vertical or horizontal bar graph layout |
+| `holeSize` | number | `45` | Donut chart inner hole size as a percentage |
 
 #### ChartData
 
@@ -199,7 +208,7 @@ Each dataset: `{ label, values: number[], color }`
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `sources` | MediaSource[] | — | Media sources (≥1) ✅ |
+| `sources` | MediaSource[] | — | Media sources (≥1) |
 | `poster` | URI | — | Poster/thumbnail |
 | `altText` | string | — | Accessible text |
 | `autoplay` | boolean | `false` | Auto-play |
@@ -215,7 +224,7 @@ Each dataset: `{ label, values: number[], color }`
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `items` | AdaptiveTile[] | — | Nested tiles ✅ |
+| `items` | AdaptiveTile[] | — | Nested tiles |
 | `layout` | enum | `"stack"` | stack, row, wrap |
 | `style` | enum | `"default"` | Container style |
 | `bleed` | boolean | `false` | Bleed to parent edge |

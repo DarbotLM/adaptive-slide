@@ -46,9 +46,9 @@ AdaptiveDeck
      ├── background: Background
      ├── body: AdaptiveTile[]          ← the bucket
      │    ├── Tile.Text
-     │    ├── Tile.Image
+     │    ├── Tile.Image / Tile.Photo
      │    ├── Tile.Code
-     │    ├── Tile.Chart
+     │    ├── Tile.Chart / semantic chart aliases
      │    ├── Tile.Media
      │    └── Tile.Container
      │         └── items: AdaptiveTile[]   ← recursive nesting
@@ -65,8 +65,10 @@ All top-level objects use a `type` discriminator:
 | Slide | `"AdaptiveSlide"` |
 | Text tile | `"Tile.Text"` |
 | Image tile | `"Tile.Image"` |
+| Photo tile alias | `"Tile.Photo"` |
 | Code tile | `"Tile.Code"` |
 | Chart tile | `"Tile.Chart"` |
+| Chart semantic aliases | `"Tile.BarGraph"`, `"Tile.PieChart"`, `"Tile.DonutChart"`, `"Tile.LineGraph"`, `"Tile.AreaChart"`, `"Tile.ScatterPlot"` |
 | Media tile | `"Tile.Media"` |
 | Container tile | `"Tile.Container"` |
 
@@ -151,9 +153,9 @@ Tiles map to Adaptive Cards elements for rendering on any AC host:
 | Tile Type | Adaptive Cards Element |
 |-----------|----------------------|
 | `Tile.Text` | `TextBlock` / `RichTextBlock` |
-| `Tile.Image` | `Image` |
+| `Tile.Image` / `Tile.Photo` | `Image` |
 | `Tile.Code` | `TextBlock` with `fontType: "monospace"` + `CodeBlock` (v1.6) |
-| `Tile.Chart` | Custom extension (rendered to `Image` on unsupported hosts) |
+| `Tile.Chart` and chart aliases | Custom extension with `FactSet` fallback on Adaptive Cards hosts |
 | `Tile.Media` | `Media` |
 | `Tile.Container` | `Container` / `ColumnSet` |
 

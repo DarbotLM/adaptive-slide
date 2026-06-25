@@ -5,6 +5,8 @@ import express from "express";
 import cors from "cors";
 import fs from "node:fs/promises";
 import path from "node:path";
+import readline from "node:readline/promises";
+import { stdin, stdout } from "node:process";
 
 const RESOURCE_MIME_TYPE = "text/html;profile=mcp-app";
 const RESOURCE_URI = "ui://adaptive-slide/viewer";
@@ -124,11 +126,12 @@ export async function startServer(port = 3001) {
     await transport.handleRequest(req, res, req.body);
   });
 
-  return new Promise<void>((resolve) => {
-    app.listen(port, () => {
+  return new Promise<void>((resolve, reject) => {
+    const httpServer = app.listen(port, () => {
       console.log(`Adaptive Slide MCP server running at http://localhost:${port}/mcp`);
       resolve();
     });
+    httpServer.on("error", reject);
   });
 }
 
@@ -139,6 +142,31 @@ const isMainModule = process.argv[1] && (
 );
 
 if (isMainModule) {
-  const port = parseInt(process.env.PORT ?? "3001", 10);
-  startServer(port).catch(console.error);
+  (async () => {
+    let port = parseInt(process.env.PORT ?? "3001", 10);
+    while (true) {
+      try {
+        await startServer(port);
+        break;
+      } catch (err: unknown) {
+        const nodeErr = err as NodeJS.ErrnoException;
+        if (nodeErr.code === "EADDRINUSE") {
+          const nextPort = port + 1;
+          const rl = readline.createInterface({ input: stdin, output: stdout });
+          const answer = await rl.question(
+            `Port ${port} is already in use. Use port ${nextPort} instead? (Y/n) `
+          );
+          rl.close();
+          if (answer.trim().toLowerCase() === "n") {
+            console.error(`Port ${port} is in use. Exiting.`);
+            process.exit(1);
+          }
+          port = nextPort;
+        } else {
+          console.error(err);
+          process.exit(1);
+        }
+      }
+    }
+  })();
 }

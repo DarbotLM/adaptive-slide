@@ -42,8 +42,8 @@ Deck ──▶ contains Slides ──▶ each Slide has a Bucket ──▶ Bucke
 | Type | Description |
 |------|-------------|
 | `Tile.Text` | Rich text — headings, body, captions, quotes |
-| `Tile.Image` | Images with alt text, sizing, and captions |
+| `Tile.Image` / `Tile.Photo` | Images and photos with alt text, sizing, captions, and photo presentation options |
 | `Tile.Code` | Syntax-highlighted code blocks |
-| `Tile.Chart` | Data visualizations — bar, line, pie, etc. |
+| `Tile.Chart` plus semantic chart aliases | Data visualizations including bar graphs, pie charts, line graphs, area charts, and scatter plots |
 | `Tile.Media` | Embedded video/audio |
 | `Tile.Container` | Nests other tiles for complex layouts |

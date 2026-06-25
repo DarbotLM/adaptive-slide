@@ -1,0 +1,586 @@
+/* =====================================================================
+   Slide canvas (rendered AdaptiveDeck preview)
+   Used by both the compact gallery cards and the workspace editor.
+   ===================================================================== */
+
+.slideCanvas {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.85rem;
+  position: relative;
+  width: 100%;
+}
+
+.slideCanvasCompact {
+  min-height: 240px;
+  padding: 0.7rem;
+}
+
+.slideCanvasInteractive {
+  cursor: pointer;
+}
+
+.slideInner {
+  align-content: start;
+  height: 100%;
+  min-width: 0;
+  width: 100%;
+}
+
+.slideInner > * {
+  min-width: 0;
+}
+
+/* =====================================================================
+   Selection ring — wraps a tile in interactive mode
+   ===================================================================== */
+
+.selectableSlot {
+  border: 1.5px dashed transparent;
+  border-radius: 14px;
+  margin: -3px;
+  padding: 1.5px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  min-width: 0;
+}
+
+.selectableSlot:hover {
+  border-color: rgba(80, 230, 255, 0.5);
+}
+
+.selectedSlot {
+  border-color: #50e6ff !important;
+  box-shadow:
+    0 0 0 2px rgba(80, 230, 255, 0.18),
+    0 8px 22px rgba(80, 230, 255, 0.18);
+}
+
+/* Carry grid placement from the inner tile up to the wrapper so the */
+/* selection slot occupies the same cell as the tile would have.    */
+.selectableSlot > * {
+  width: 100%;
+  height: 100%;
+}
+
+/* =====================================================================
+   Tile typography
+   ===================================================================== */
+
+.textTile {
+  line-height: 1.35;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.textHeading {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.textSubheading {
+  color: #c7e2f7;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.textBody {
+  color: #e6f1fb;
+  font-size: 0.78rem;
+}
+
+.textCaption {
+  color: #b8d2ea;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+}
+
+.textQuote {
+  border-left: 3px solid #50e6ff;
+  color: #d7ecff;
+  font-style: italic;
+  padding-left: 0.7rem;
+}
+
+.sizeSmall {
+  font-size: 0.72rem !important;
+}
+
+.sizeMedium {
+  font-size: 0.95rem !important;
+}
+
+.sizeLarge.textHeading {
+  font-size: 1.05rem !important;
+}
+
+.sizeLarge {
+  font-size: 0.92rem !important;
+}
+
+.sizeExtraLarge.textHeading {
+  font-size: 1.2rem !important;
+}
+
+.sizeExtraLarge {
+  font-size: 1rem !important;
+}
+
+.weightBolder {
+  font-weight: 800;
+}
+
+.alignCenter {
+  text-align: center;
+}
+
+.alignRight {
+  text-align: right;
+}
+
+.textLight {
+  color: #ffffff;
+}
+
+.textAccent {
+  color: var(--slideAccent, #50e6ff);
+}
+
+.textGood {
+  color: #6ee7b7;
+}
+
+.textWarning {
+  color: #fbbf24;
+}
+
+.textAttention {
+  color: #fda4af;
+}
+
+.bulletList {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.bulletList li {
+  color: #e6f1fb;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.bulletList li::marker {
+  color: var(--slideAccent, #50e6ff);
+}
+
+/* =====================================================================
+   Container blocks
+   ===================================================================== */
+
+.containerBlock {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.65rem 0.75rem;
+}
+
+.containerNested {
+  padding: 0.5rem 0.6rem;
+}
+
+.containerRow {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+.containerWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.containerWrap > * {
+  flex: 1 1 8rem;
+}
+
+.containerDefault {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.containerEmphasis {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.containerAccent {
+  background: rgba(80, 230, 255, 0.13);
+  border-color: rgba(80, 230, 255, 0.35);
+}
+
+.containerGood {
+  background: rgba(110, 231, 183, 0.13);
+  border-color: rgba(110, 231, 183, 0.35);
+}
+
+.containerWarning {
+  background: rgba(251, 191, 36, 0.13);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.containerAttention {
+  background: rgba(253, 164, 175, 0.14);
+  border-color: rgba(253, 164, 175, 0.4);
+}
+
+/* =====================================================================
+   Stat block (Container with heading + caption)
+   ===================================================================== */
+
+.statBlock {
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  display: grid;
+  gap: 0.15rem;
+  justify-items: center;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.7rem 0.5rem;
+  text-align: center;
+}
+
+.statValue {
+  color: #ffffff;
+  font-size: clamp(0.95rem, 1.85vw, 1.35rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.statLabel {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* =====================================================================
+   Chart block
+   ===================================================================== */
+
+.chartBlock {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.7rem 0.75rem;
+}
+
+.blockTitle {
+  color: var(--slideAccent, #50e6ff);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.chartRows {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.chartRow {
+  align-items: center;
+  display: grid;
+  gap: 0.4rem;
+  grid-template-columns: minmax(2.5rem, auto) 1fr minmax(1.6rem, auto);
+  min-width: 0;
+}
+
+.chartLabel,
+.chartValue {
+  color: #e6f1fb;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chartValue {
+  text-align: right;
+}
+
+.chartTrack {
+  background: rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  height: 0.55rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chartFill {
+  border-radius: 999px;
+  height: 100%;
+  transition: width 360ms ease;
+}
+
+.piePreviewWrap {
+  align-items: center;
+  display: grid;
+  gap: 0.45rem;
+  justify-items: center;
+}
+
+.piePreview {
+  border-radius: 50%;
+  height: 7.5rem;
+  width: 7.5rem;
+}
+
+.chartLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+  justify-content: center;
+}
+
+.chartLegend span {
+  align-items: center;
+  color: #e6f1fb;
+  display: inline-flex;
+  font-size: 0.65rem;
+  font-weight: 600;
+  gap: 0.25rem;
+}
+
+.chartLegend span span {
+  border-radius: 2px;
+  display: inline-block;
+  height: 0.55rem;
+  width: 0.55rem;
+}
+
+.cartesianPreview {
+  max-height: 11rem;
+  width: 100%;
+}
+
+.cartesianPreview line {
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 1;
+}
+
+.cartesianPreview .axisLine {
+  stroke: rgba(255, 255, 255, 0.34);
+}
+
+/* =====================================================================
+   Code + image tiles
+   ===================================================================== */
+
+.codeTile {
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 12px;
+  color: #d7ecff;
+  font-size: 0.7rem;
+  margin: 0;
+  min-width: 0;
+  overflow: auto;
+  padding: 0.7rem 0.85rem;
+}
+
+.imageTile {
+  margin: 0;
+  min-width: 0;
+}
+
+.imageFrame {
+  overflow: hidden;
+  position: relative;
+}
+
+.imageTile img {
+  border-radius: 10px;
+  display: block;
+  height: auto;
+  max-width: 100%;
+  width: 100%;
+}
+
+.imagePlaceholder {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  font-size: 0.72rem;
+  height: 100%;
+  justify-content: center;
+  min-height: 4rem;
+  width: 100%;
+}
+
+.imageTile figcaption {
+  color: #d7ecff;
+  font-size: 0.7rem;
+  margin-top: 0.3rem;
+}
+
+.imageCaptionOverlay {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.74));
+  bottom: 0;
+  color: #ffffff;
+  left: 0;
+  margin: 0;
+  padding: 1rem 0.7rem 0.55rem;
+  position: absolute;
+  right: 0;
+}
+
+/* =====================================================================
+   Media tile
+   ===================================================================== */
+
+.mediaTile {
+  background: #020817;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.mediaPoster {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.78;
+  width: 100%;
+}
+
+.mediaPlayBadge {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  color: #ffffff;
+  display: inline-flex;
+  height: 44px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+}
+
+.mediaSourceLabel {
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 6px;
+  bottom: 0.4rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.4rem;
+  position: absolute;
+  right: 0.4rem;
+  text-transform: uppercase;
+}
+
+/* =====================================================================
+   Input tile mocks (gallery preview only — disabled controls).
+   ===================================================================== */
+
+.inputMock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-family: inherit;
+}
+
+.inputChoiceFieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.inputLabelMock {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.inputRequiredStar {
+  color: #fda4af;
+  font-weight: 700;
+}
+
+.inputControl {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  font-family: inherit;
+  font-size: 0.82rem;
+  box-sizing: border-box;
+}
+
+.inputControl:disabled {
+  cursor: default;
+  opacity: 0.92;
+}
+
+textarea.inputControl {
+  resize: none;
+  min-height: 56px;
+  line-height: 1.35;
+}
+
+.choiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.choiceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0.15rem 0;
+  cursor: default;
+}
+
+.choiceRow input[type="radio"],
+.choiceRow input[type="checkbox"] {
+  accent-color: var(--slideAccent, #34d399);
+  cursor: default;
+}

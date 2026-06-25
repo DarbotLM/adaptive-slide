@@ -134,6 +134,8 @@ function tileImageToImage(tile) {
   if (tile.size && allowedSizes.has(tile.size)) img.size = sizeMap[tile.size];
   if (tile.horizontalAlignment) img.horizontalAlignment = tile.horizontalAlignment;
   if (tile.backgroundColor) img.backgroundColor = tile.backgroundColor;
+  if (tile.height) img.height = tile.height;
+  if (tile.style === "avatar") img.style = "person";
   if (!tile.caption) {
     return applyCommonProps(img, tile);
   }
@@ -300,10 +302,17 @@ function tileToElement(tile) {
     case "Tile.Text":
       return tileTextToTextBlock(tile);
     case "Tile.Image":
+    case "Tile.Photo":
       return tileImageToImage(tile);
     case "Tile.Code":
       return tileCodeToCodeBlock(tile);
     case "Tile.Chart":
+    case "Tile.BarGraph":
+    case "Tile.PieChart":
+    case "Tile.DonutChart":
+    case "Tile.LineGraph":
+    case "Tile.AreaChart":
+    case "Tile.ScatterPlot":
       return tileChartToFactSet(tile);
     case "Tile.Media":
       return tileMediaToMedia(tile);

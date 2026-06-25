@@ -2,15 +2,54 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://adaptive-slide.dev/schemas/tiles/chart-tile.schema.json",
   "title": "Chart Tile",
-  "description": "A tile for rendering data visualizations — bar, line, pie, and donut charts.",
+  "description": "A tile for rendering data visualizations, including bar graphs, line graphs, pie charts, donut charts, area charts, and scatter plots.",
   "type": "object",
-  "required": ["type", "chartType", "data"],
-  "allOf": [{ "$ref": "../tile.schema.json#/$defs/TileBase" }],
+  "required": ["type", "data"],
+  "allOf": [
+    { "$ref": "../tile.schema.json#/$defs/TileBase" },
+    {
+      "if": {
+        "properties": {
+          "type": { "const": "Tile.Chart" }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "required": ["chartType"]
+      }
+    }
+  ],
   "properties": {
-    "type": { "const": "Tile.Chart" },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Tile.Chart",
+        "Tile.BarGraph",
+        "Tile.PieChart",
+        "Tile.DonutChart",
+        "Tile.LineGraph",
+        "Tile.AreaChart",
+        "Tile.ScatterPlot"
+      ],
+      "description": "Tile.Chart is the generic chart element. Semantic aliases infer chartType when omitted."
+    },
     "chartType": {
       "type": "string",
-      "enum": ["bar", "line", "pie", "donut", "area", "scatter"],
+      "enum": [
+        "bar",
+        "bargraph",
+        "horizontalBar",
+        "line",
+        "linegraph",
+        "pie",
+        "piechart",
+        "donut",
+        "donutchart",
+        "area",
+        "areachart",
+        "scatter",
+        "scatterplot"
+      ],
       "description": "Type of chart to render"
     },
     "title": {
@@ -37,6 +76,19 @@
       "type": "string",
       "pattern": "^\\d+:\\d+$",
       "default": "16:9"
+    },
+    "orientation": {
+      "type": "string",
+      "enum": ["vertical", "horizontal"],
+      "default": "vertical",
+      "description": "Bar graph orientation"
+    },
+    "holeSize": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 80,
+      "default": 45,
+      "description": "Donut chart inner hole size as a percentage of radius"
     }
   },
   "unevaluatedProperties": false,

@@ -83,6 +83,118 @@ const themes = {
     fontFamily: "Segoe UI, sans-serif",
     darkMode: true,
   },
+  project: {
+    name: "Project Sky",
+    primaryColor: "#0ea5e9",
+    accentColor: "#38bdf8",
+    backgroundColor: "#082f49",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  marketing: {
+    name: "Marketing Rose",
+    primaryColor: "#ec4899",
+    accentColor: "#f97316",
+    backgroundColor: "#500724",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  hr: {
+    name: "Workforce Violet",
+    primaryColor: "#8b5cf6",
+    accentColor: "#f472b6",
+    backgroundColor: "#2e1065",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  engineering: {
+    name: "Engineering Green",
+    primaryColor: "#22c55e",
+    accentColor: "#67e8f9",
+    backgroundColor: "#052e16",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  devops: {
+    name: "DevOps Blue",
+    primaryColor: "#3b82f6",
+    accentColor: "#22d3ee",
+    backgroundColor: "#111827",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  security: {
+    name: "Security Red",
+    primaryColor: "#dc2626",
+    accentColor: "#f59e0b",
+    backgroundColor: "#450a0a",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  legal: {
+    name: "Legal Slate",
+    primaryColor: "#64748b",
+    accentColor: "#fbbf24",
+    backgroundColor: "#111827",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  logistics: {
+    name: "Logistics Teal",
+    primaryColor: "#14b8a6",
+    accentColor: "#fde047",
+    backgroundColor: "#134e4a",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  energy: {
+    name: "Energy Lime",
+    primaryColor: "#84cc16",
+    accentColor: "#facc15",
+    backgroundColor: "#1a2e05",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  nonprofit: {
+    name: "Nonprofit Blue",
+    primaryColor: "#0ea5e9",
+    accentColor: "#f472b6",
+    backgroundColor: "#0c4a6e",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  hospitality: {
+    name: "Hospitality Fuchsia",
+    primaryColor: "#d946ef",
+    accentColor: "#facc15",
+    backgroundColor: "#581c87",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  realEstate: {
+    name: "Real Estate Amber",
+    primaryColor: "#f59e0b",
+    accentColor: "#34d399",
+    backgroundColor: "#451a03",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  insurance: {
+    name: "Insurance Royal",
+    primaryColor: "#2563eb",
+    accentColor: "#93c5fd",
+    backgroundColor: "#172554",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
+  telecom: {
+    name: "Telecom Cyan",
+    primaryColor: "#06b6d4",
+    accentColor: "#a78bfa",
+    backgroundColor: "#164e63",
+    fontFamily: "Segoe UI, sans-serif",
+    darkMode: true,
+  },
   acPattern: {
     primaryColor: "#2563eb",
     accentColor: "#60a5fa",
@@ -370,6 +482,183 @@ function closeSlide(id, title, subtitle, theme) {
       },
     ],
   };
+}
+
+const DECK_SIZE_TIERS = [8, 16, 32, 64];
+
+function slugify(value) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function narrativeSlide({ id, title, subtitle, theme, sections }) {
+  return {
+    type: "AdaptiveSlide",
+    id,
+    title,
+    background: gradientBackground(theme),
+    layout: { mode: "grid", columns: 2, gap: "default" },
+    body: [
+      headerTile({ text: title, gridPosition: { column: 1, row: 1, columnSpan: 2 } }),
+      ...(subtitle
+        ? [subheaderTile({ text: subtitle, gridPosition: { column: 1, row: 2, columnSpan: 2 } })]
+        : []),
+      ...sections.map((section, index) => ({
+        type: "Tile.Container",
+        style: section.style ?? (index % 2 === 0 ? "accent" : "emphasis"),
+        gridPosition: { column: (index % 2) + 1, row: Math.floor(index / 2) + 3 },
+        items: [
+          {
+            type: "Tile.Text",
+            text: section.label,
+            style: "subheading",
+            weight: "bolder",
+            color: "accent",
+          },
+          { type: "Tile.Text", text: section.detail, style: "body", color: "light" },
+        ],
+      })),
+    ],
+  };
+}
+
+function inputCommitmentSlide({ id, title, prompt, theme, submitData }) {
+  return {
+    type: "AdaptiveSlide",
+    id,
+    title,
+    background: gradientBackground(theme),
+    body: [
+      { type: "Tile.Text", text: title, style: "heading", size: "large", color: "light" },
+      { type: "Tile.Text", text: prompt, style: "subheading", color: "light" },
+      {
+        type: "Tile.Input.Number",
+        id: `${id}-confidence`,
+        label: "Confidence score",
+        placeholder: "85",
+        min: 0,
+        max: 100,
+        isRequired: true,
+        errorMessage: "Enter a confidence score from 0 to 100.",
+      },
+      {
+        type: "Tile.Input.ChoiceSet",
+        id: `${id}-priority`,
+        label: "Priority",
+        value: "this-week",
+        style: "compact",
+        choices: [
+          { title: "Today", value: "today" },
+          { title: "This week", value: "this-week" },
+          { title: "Monitor", value: "monitor" },
+        ],
+      },
+      {
+        type: "Tile.Input.Text",
+        id: `${id}-notes`,
+        label: "Decision notes",
+        placeholder: "Capture owner, decision, or blocker.",
+        isMultiline: true,
+        maxLength: 500,
+      },
+    ],
+    actions: [
+      {
+        type: "Action.Submit",
+        title: "Submit update",
+        data: submitData,
+      },
+    ],
+  };
+}
+
+function scenarioSignalSlide({ id, title, theme, chart, status, actionList }) {
+  const chartType = chart.chartType ?? "donut";
+  return dashboardSlide({
+    id,
+    title,
+    subtitle: "Composition, trend, and operating signal for the next decision.",
+    theme,
+    columns: 4,
+    body: [
+      chartTile({
+        ...chart,
+        chartType,
+        gridPosition: { column: 1, row: 3, columnSpan: 2, rowSpan: 2 },
+      }),
+      statusTile({
+        ...status,
+        gridPosition: { column: 3, row: 3, columnSpan: 2 },
+      }),
+      listTile({
+        ...actionList,
+        title: "Signal response",
+        gridPosition: { column: 3, row: 4, columnSpan: 2 },
+      }),
+    ],
+  });
+}
+
+function scenarioRiskSlide({ id, title, theme, agendaItems, checklistItems }) {
+  return narrativeSlide({
+    id,
+    title,
+    subtitle: "Watchlist built from the agenda and operating checklist.",
+    theme,
+    sections: agendaItems.slice(0, 4).map((item, index) => ({
+      label: `${item.label} risk`,
+      detail: `${item.detail} Action: ${checklistItems[index % checklistItems.length]}.`,
+      style: index === 0 ? "warning" : undefined,
+    })),
+  });
+}
+
+function scenarioCommitmentSlide({ id, title, theme, useCase }) {
+  return inputCommitmentSlide({
+    id,
+    title,
+    prompt: `Capture the next commitment for ${useCase}.`,
+    theme,
+    submitData: { templateId: id.replace(/-commitment$/, ""), action: "commitment" },
+  });
+}
+
+function scenarioTierSlides({
+  id,
+  title,
+  theme,
+  chart,
+  status,
+  actionList,
+  agendaItems,
+  checklistItems,
+  useCase,
+}) {
+  return [
+    scenarioSignalSlide({
+      id: `${id}-signal`,
+      title: `${title} signal review`,
+      theme,
+      chart,
+      status,
+      actionList,
+    }),
+    scenarioRiskSlide({
+      id: `${id}-risk`,
+      title: `${title} risk register`,
+      theme,
+      agendaItems,
+      checklistItems,
+    }),
+    scenarioCommitmentSlide({
+      id: `${id}-commitment`,
+      title: `${title} commitment capture`,
+      theme,
+      useCase,
+    }),
+  ];
 }
 
 // =============================================================================
@@ -873,11 +1162,1365 @@ export function createPromptDeck(prompt) {
   });
 }
 
+function scenarioTemplate({
+  id,
+  title,
+  category,
+  useCase,
+  audience,
+  summary,
+  tags,
+  theme,
+  deckTitle,
+  deckDescription,
+  dashboardTitle,
+  dashboardSubtitle,
+  stats,
+  chart,
+  status,
+  actionList,
+  agendaTitle,
+  agendaItems,
+  checklistTitle,
+  checklistItems,
+  closeTitle,
+  closeSubtitle,
+}) {
+  return {
+    id,
+    title,
+    category,
+    useCase,
+    audience,
+    summary,
+    tags,
+    deck: deck({
+      title: deckTitle,
+      description: deckDescription,
+      tags,
+      theme,
+      slides: [
+        dashboardSlide({
+          id: `${id}-dashboard`,
+          title: dashboardTitle,
+          subtitle: dashboardSubtitle,
+          theme,
+          columns: 4,
+          body: [
+            ...stats.map((stat, index) => (
+              statTile({ ...stat, gridPosition: { column: index + 1, row: 3 } })
+            )),
+            chartTile({ ...chart, gridPosition: { column: 1, row: 4, columnSpan: 2, rowSpan: 2 } }),
+            statusTile({ ...status, gridPosition: { column: 3, row: 4, columnSpan: 2 } }),
+            listTile({ ...actionList, gridPosition: { column: 3, row: 5, columnSpan: 2 } }),
+          ],
+        }),
+        titleSlide(`${id}-title`, title, useCase, theme),
+        agendaSlide(`${id}-agenda`, agendaTitle, agendaItems),
+        ...scenarioTierSlides({
+          id,
+          title,
+          theme,
+          chart,
+          status,
+          actionList,
+          agendaItems,
+          checklistItems,
+          useCase,
+        }),
+        checklistSlide(`${id}-checklist`, checklistTitle, checklistItems),
+        closeSlide(`${id}-close`, closeTitle, closeSubtitle, theme),
+      ],
+    }),
+  };
+}
+
+const enterpriseScenarioTemplates = [
+  scenarioTemplate({
+    id: "project-portfolio",
+    title: "Executive Project Portfolio",
+    category: "Project Management",
+    useCase: "Portfolio governance, steering committees, and dependency review",
+    audience: "PMO leads, sponsors, delivery executives, workstream owners",
+    summary:
+      "Executive portfolio dashboard with schedule health, budget risk, blockers, and sponsor actions.",
+    tags: ["project-management", "portfolio", "governance"],
+    theme: themes.project,
+    deckTitle: "Q3 Portfolio Governance Review",
+    deckDescription: "Portfolio-level delivery health, risks, dependencies, and leadership actions.",
+    dashboardTitle: "Q3 Portfolio Health - Week 8",
+    dashboardSubtitle: "24 programs - 6 strategic bets - steering committee pack",
+    stats: [
+      { value: "81%", label: "On track", style: "good" },
+      { value: "24", label: "Active projects", style: "accent" },
+      { value: "$3.8M", label: "Budget at risk", style: "warning" },
+      { value: "6", label: "Critical blockers", style: "attention" },
+    ],
+    chart: {
+      title: "Health by portfolio",
+      labels: ["Core", "Growth", "Compliance", "Platform"],
+      values: [92, 76, 84, 68],
+      color: "#38bdf8",
+    },
+    status: {
+      label: "Top dependency",
+      status: "ERP migration - vendor interface certification delayed",
+      detail: "Owner assigned - decision needed on parallel test window",
+      style: "warning",
+    },
+    actionList: {
+      title: "Sponsor actions",
+      items: [
+        "Approve extra QA week for ERP integration",
+        "Resolve data owner conflict for finance feed",
+        "Confirm release train scope cut by Friday",
+      ],
+    },
+    agendaTitle: "Governance cadence",
+    agendaItems: [
+      { label: "Scope", detail: "Confirm funded outcomes, change requests, and no-go items." },
+      { label: "Risk", detail: "Review cross-program risks that require sponsor decisions." },
+      { label: "Dependency", detail: "Track unblockers, decision owners, and due dates." },
+      { label: "Commit", detail: "Record portfolio decisions and publish the action register." },
+    ],
+    checklistTitle: "Portfolio review checklist",
+    checklistItems: [
+      "Refresh health score from source systems",
+      "Confirm blocker owners and due dates",
+      "Attach finance variance notes",
+      "Publish decisions within one business day",
+    ],
+    closeTitle: "Portfolio aligned",
+    closeSubtitle: "Turn steering decisions into tracked delivery actions.",
+  }),
+  scenarioTemplate({
+    id: "marketing-campaign",
+    title: "Integrated Campaign Performance",
+    category: "Marketing",
+    useCase: "Campaign performance review and demand-generation optimization",
+    audience: "Marketing leaders, demand generation, sales development, agencies",
+    summary:
+      "Campaign dashboard with reach, click-through, cost per lead, MQL lift, and channel actions.",
+    tags: ["marketing", "campaign", "demand-generation"],
+    theme: themes.marketing,
+    deckTitle: "Spring Launch Campaign Performance",
+    deckDescription: "Integrated marketing campaign metrics, channel mix, and optimization actions.",
+    dashboardTitle: "Spring Launch - Week 5",
+    dashboardSubtitle: "Paid search - social - webinar - partner syndication",
+    stats: [
+      { value: "2.8M", label: "Reach", style: "accent" },
+      { value: "4.7%", label: "CTR", style: "good" },
+      { value: "$42", label: "Cost per lead", style: "emphasis" },
+      { value: "+18%", label: "MQL lift", style: "good" },
+    ],
+    chart: {
+      title: "Funnel conversion %",
+      labels: ["Reach", "Clicks", "MQL", "SQL"],
+      values: [100, 47, 18, 9],
+      color: "#f97316",
+    },
+    status: {
+      label: "Optimization focus",
+      status: "Partner syndication CPL is 31% above plan",
+      detail: "Shift spend to webinar retargeting until creative refresh lands",
+      style: "warning",
+    },
+    actionList: {
+      title: "Next experiments",
+      items: [
+        "A/B test proof-point headline on paid search",
+        "Retarget webinar attendees with case-study offer",
+        "Pause two low-quality partner placements",
+      ],
+    },
+    agendaTitle: "Campaign operating rhythm",
+    agendaItems: [
+      { label: "Audience", detail: "Review segment fit, exclusions, and intent signals." },
+      { label: "Creative", detail: "Compare hook, offer, and proof-point performance." },
+      { label: "Channel", detail: "Rebalance spend against quality and conversion." },
+      { label: "Sales handoff", detail: "Check routing, SLA adherence, and feedback loop." },
+    ],
+    checklistTitle: "Optimization checklist",
+    checklistItems: [
+      "Refresh source-of-truth campaign tags",
+      "Pull rejected lead reasons from sales",
+      "Confirm budget reallocation approval",
+      "Update creative backlog with test results",
+    ],
+    closeTitle: "Campaign tuned",
+    closeSubtitle: "Move budget toward the segments that convert and document the learning loop.",
+  }),
+  scenarioTemplate({
+    id: "hr-workforce",
+    title: "Workforce Planning Review",
+    category: "Human Resources",
+    useCase: "Headcount planning, engagement review, and retention risk tracking",
+    audience: "HR business partners, talent leaders, finance partners, managers",
+    summary:
+      "Workforce dashboard with engagement, open roles, time-to-fill, attrition risk, and hiring actions.",
+    tags: ["human-resources", "workforce", "talent"],
+    theme: themes.hr,
+    deckTitle: "Workforce Planning - Product Org",
+    deckDescription: "Talent health, hiring progress, and retention risk dashboard for planning reviews.",
+    dashboardTitle: "Product Org Workforce Snapshot",
+    dashboardSubtitle: "312 employees - Q3 hiring plan - engagement pulse",
+    stats: [
+      { value: "92%", label: "Engagement", style: "good" },
+      { value: "14", label: "Open roles", style: "accent" },
+      { value: "38d", label: "Time to fill", style: "warning" },
+      { value: "7", label: "Retention risks", style: "attention" },
+    ],
+    chart: {
+      title: "Headcount by function",
+      labels: ["PM", "Design", "Eng", "Ops"],
+      values: [42, 36, 198, 36],
+      color: "#f472b6",
+    },
+    status: {
+      label: "Hot spot",
+      status: "Senior engineering backfill risk in platform team",
+      detail: "Two finalists active - comp exception review due Thursday",
+      style: "attention",
+    },
+    actionList: {
+      title: "People actions",
+      items: [
+        "Approve Q3 critical-role exception list",
+        "Schedule manager retention calibration",
+        "Publish interview panel refresh plan",
+      ],
+    },
+    agendaTitle: "Workforce planning flow",
+    agendaItems: [
+      { label: "Demand", detail: "Connect business goals to funded role demand." },
+      { label: "Supply", detail: "Review internal mobility, backfills, and candidate health." },
+      { label: "Risk", detail: "Identify retention signals and role coverage gaps." },
+      { label: "Action", detail: "Assign owners for hiring, retention, and enablement moves." },
+    ],
+    checklistTitle: "HRBP prep checklist",
+    checklistItems: [
+      "Refresh headcount actuals and requisition state",
+      "Validate retention risks with managers",
+      "Confirm finance alignment on open roles",
+      "Document offers, exceptions, and due dates",
+    ],
+    closeTitle: "Talent plan ready",
+    closeSubtitle: "Align hiring moves with retention actions before the next planning gate.",
+  }),
+  scenarioTemplate({
+    id: "engineering-release",
+    title: "Engineering Release Readiness",
+    category: "Engineering",
+    useCase: "Release readiness, quality gates, and defect triage",
+    audience: "Engineering managers, release leads, QA, product owners",
+    summary:
+      "Release dashboard with test pass rate, open defects, code coverage, freeze date, and triage actions.",
+    tags: ["engineering", "release", "quality"],
+    theme: themes.engineering,
+    deckTitle: "Release 2026.05 Readiness Review",
+    deckDescription: "Release health, quality gates, risks, and launch readiness actions.",
+    dashboardTitle: "Release 2026.05 - Readiness",
+    dashboardSubtitle: "Feature freeze in 4 days - production ring 0 candidate",
+    stats: [
+      { value: "96%", label: "Test pass", style: "good" },
+      { value: "12", label: "Open defects", style: "warning" },
+      { value: "4d", label: "To freeze", style: "accent" },
+      { value: "89%", label: "Coverage", style: "good" },
+    ],
+    chart: {
+      title: "Defects by severity",
+      labels: ["Critical", "High", "Medium", "Low"],
+      values: [0, 2, 7, 3],
+      color: "#67e8f9",
+    },
+    status: {
+      label: "Release risk",
+      status: "Payment retry telemetry missing in canary ring",
+      detail: "Owner: reliability - fix queued behind trace schema update",
+      style: "warning",
+    },
+    actionList: {
+      title: "Triage actions",
+      items: [
+        "Close two high-severity defects or cut scope",
+        "Run rollback rehearsal in staging",
+        "Publish launch notes to support by Thursday",
+      ],
+    },
+    agendaTitle: "Release gate review",
+    agendaItems: [
+      { label: "Scope", detail: "Validate committed features, cuts, and known limitations." },
+      { label: "Quality", detail: "Review automated suites, manual coverage, and defect aging." },
+      { label: "Reliability", detail: "Confirm telemetry, rollback, and alert readiness." },
+      { label: "Launch", detail: "Approve go/no-go, comms, and post-release watch." },
+    ],
+    checklistTitle: "Launch readiness checklist",
+    checklistItems: [
+      "Build promoted from signed release branch",
+      "Canary metrics are within guardrails",
+      "Rollback steps rehearsed and documented",
+      "Support and customer success notes published",
+    ],
+    closeTitle: "Release decision set",
+    closeSubtitle: "Keep defects visible and make the launch call with evidence.",
+  }),
+  scenarioTemplate({
+    id: "devops-service-health",
+    title: "Service Health Operations",
+    category: "DevOps",
+    useCase: "SLO review, incident trends, and deployment operations",
+    audience: "SRE, platform engineering, incident commanders, service owners",
+    summary:
+      "Service health dashboard with SLO, incidents, MTTR, deployment throughput, and reliability actions.",
+    tags: ["devops", "sre", "service-health"],
+    theme: themes.devops,
+    deckTitle: "Platform Service Health Review",
+    deckDescription: "SLO adherence, incident response, deployment flow, and reliability actions.",
+    dashboardTitle: "Platform Health - Last 7 Days",
+    dashboardSubtitle: "API gateway - identity - billing - notifications",
+    stats: [
+      { value: "99.95%", label: "SLO", style: "good" },
+      { value: "3", label: "Incidents", style: "warning" },
+      { value: "18m", label: "MTTR", style: "accent" },
+      { value: "42", label: "Deploys", style: "good" },
+    ],
+    chart: {
+      title: "Deploys by service",
+      labels: ["API", "Auth", "Billing", "Notify"],
+      values: [16, 8, 7, 11],
+      color: "#22d3ee",
+    },
+    status: {
+      label: "Reliability focus",
+      status: "Notification queue lag breached burn-rate alert twice",
+      detail: "Shard rebalance planned - alert tuning needed after deploy",
+      style: "warning",
+    },
+    actionList: {
+      title: "Ops actions",
+      items: [
+        "Patch noisy alert route for notification lag",
+        "Complete post-incident review for INC-913",
+        "Run game day for auth dependency failure",
+      ],
+    },
+    agendaTitle: "Service review flow",
+    agendaItems: [
+      { label: "Signals", detail: "Review SLI trends, alert fidelity, and customer impact." },
+      { label: "Incidents", detail: "Check timelines, mitigations, and action item closure." },
+      { label: "Change", detail: "Correlate deploys, config changes, and regressions." },
+      { label: "Capacity", detail: "Validate headroom, queue depth, and scaling policies." },
+    ],
+    checklistTitle: "Weekly SRE checklist",
+    checklistItems: [
+      "Close incident action items older than 14 days",
+      "Review burn-rate alerts for noise and misses",
+      "Confirm runbooks have current owners",
+      "Publish reliability summary to service owners",
+    ],
+    closeTitle: "Service posture clear",
+    closeSubtitle: "Use SLO evidence to fund reliability work before customers feel pain.",
+  }),
+  scenarioTemplate({
+    id: "security-posture",
+    title: "Security Posture Review",
+    category: "Security",
+    useCase: "Vulnerability management, identity controls, and compliance readiness",
+    audience: "Security leaders, engineering owners, compliance, IT operations",
+    summary:
+      "Security dashboard with critical findings, high vulnerabilities, MFA coverage, patch SLA, and remediation actions.",
+    tags: ["security", "vulnerability-management", "compliance"],
+    theme: themes.security,
+    deckTitle: "Security Posture - Monthly Review",
+    deckDescription: "Vulnerability, identity, remediation, and compliance posture dashboard.",
+    dashboardTitle: "Security Posture - May Review",
+    dashboardSubtitle: "Enterprise estate - identity - endpoints - cloud workloads",
+    stats: [
+      { value: "0", label: "Critical open", style: "good" },
+      { value: "9", label: "High vulns", style: "attention" },
+      { value: "87%", label: "MFA coverage", style: "warning" },
+      { value: "24h", label: "Patch SLA", style: "accent" },
+    ],
+    chart: {
+      title: "Findings by domain",
+      labels: ["Identity", "Cloud", "Endpoint", "App"],
+      values: [18, 26, 34, 21],
+      color: "#f59e0b",
+    },
+    status: {
+      label: "Priority risk",
+      status: "Legacy service principals without owner attestation",
+      detail: "Remediation sprint approved - app owners due Friday",
+      style: "attention",
+    },
+    actionList: {
+      title: "Remediation actions",
+      items: [
+        "Enforce MFA exception review for admins",
+        "Assign owner to all stale workload identities",
+        "Patch internet-facing high findings this week",
+      ],
+    },
+    agendaTitle: "Posture review flow",
+    agendaItems: [
+      { label: "Exposure", detail: "Prioritize externally reachable and privileged assets." },
+      { label: "Controls", detail: "Review identity, device, and network control coverage." },
+      { label: "Remediation", detail: "Track owners, exceptions, and missed SLAs." },
+      { label: "Evidence", detail: "Capture audit artifacts and compliance decisions." },
+    ],
+    checklistTitle: "Security review checklist",
+    checklistItems: [
+      "Verify high-risk exceptions have expiry dates",
+      "Confirm owners for critical assets",
+      "Export evidence for audit package",
+      "Publish remediation burndown to engineering",
+    ],
+    closeTitle: "Risk posture actionable",
+    closeSubtitle: "Convert findings into owner-backed remediation plans with deadlines.",
+  }),
+  scenarioTemplate({
+    id: "legal-contract",
+    title: "Contract Review Operations",
+    category: "Legal",
+    useCase: "Legal operations queue, contract risk review, and clause escalation",
+    audience: "Legal operations, counsel, procurement, sales operations",
+    summary:
+      "Legal operations dashboard with open matters, escalations, review aging, exposure, and contract actions.",
+    tags: ["legal", "contracts", "operations"],
+    theme: themes.legal,
+    deckTitle: "Contract Operations Queue Review",
+    deckDescription: "Legal matter queue, SLA health, exposure, and clause escalation dashboard.",
+    dashboardTitle: "Contract Queue - Week 19",
+    dashboardSubtitle: "Commercial agreements - procurement - privacy - renewals",
+    stats: [
+      { value: "42", label: "Open matters", style: "accent" },
+      { value: "6", label: "Escalations", style: "attention" },
+      { value: "9d", label: "Avg review", style: "warning" },
+      { value: "$1.8M", label: "Exposure", style: "emphasis" },
+    ],
+    chart: {
+      title: "Matters by stage",
+      labels: ["Intake", "Review", "Redline", "Approve"],
+      values: [11, 16, 9, 6],
+      color: "#fbbf24",
+    },
+    status: {
+      label: "Clause watch",
+      status: "Non-standard liability cap requested on enterprise renewal",
+      detail: "Counsel review complete - business owner decision needed",
+      style: "warning",
+    },
+    actionList: {
+      title: "Queue actions",
+      items: [
+        "Batch low-risk NDAs for standard approval",
+        "Escalate privacy addendum to data protection officer",
+        "Update playbook for liability fallback language",
+      ],
+    },
+    agendaTitle: "Legal ops cadence",
+    agendaItems: [
+      { label: "Intake", detail: "Classify matter type, urgency, and business owner." },
+      { label: "Risk", detail: "Flag non-standard clauses and policy exceptions." },
+      { label: "SLA", detail: "Review aging, blockers, and counsel load." },
+      { label: "Decision", detail: "Document approvals, fallback positions, and next steps." },
+    ],
+    checklistTitle: "Contract review checklist",
+    checklistItems: [
+      "Confirm current template and fallback terms",
+      "Attach business justification for exceptions",
+      "Log privacy and security dependencies",
+      "Update matter status after counsel decision",
+    ],
+    closeTitle: "Contract queue controlled",
+    closeSubtitle: "Keep non-standard risk visible and move routine work through standard paths.",
+  }),
+  scenarioTemplate({
+    id: "logistics-fulfillment",
+    title: "Fulfillment Network Briefing",
+    category: "Logistics",
+    useCase: "Warehouse, carrier, and route operations review",
+    audience: "Logistics managers, warehouse leads, carrier managers, customer operations",
+    summary:
+      "Fulfillment dashboard with on-time rate, dwell time, carrier exceptions, order volume, and network actions.",
+    tags: ["logistics", "fulfillment", "supply-chain"],
+    theme: themes.logistics,
+    deckTitle: "Fulfillment Network - Daily Briefing",
+    deckDescription: "Warehouse throughput, carrier health, and exception management dashboard.",
+    dashboardTitle: "Fulfillment Network - Today",
+    dashboardSubtitle: "4 DCs - 18 carriers - next-day promise window",
+    stats: [
+      { value: "94%", label: "On time", style: "good" },
+      { value: "1.8d", label: "Dwell", style: "accent" },
+      { value: "12", label: "Exceptions", style: "warning" },
+      { value: "8.7K", label: "Orders", style: "emphasis" },
+    ],
+    chart: {
+      title: "Route performance %",
+      labels: ["North", "East", "South", "West"],
+      values: [96, 91, 88, 97],
+      color: "#fde047",
+    },
+    status: {
+      label: "Carrier watch",
+      status: "West regional carrier missed pickup cutoff twice",
+      detail: "Backup carrier staged for priority shipments",
+      style: "warning",
+    },
+    actionList: {
+      title: "Network actions",
+      items: [
+        "Move priority orders to backup carrier",
+        "Clear 38 aged picks before noon cutoff",
+        "Confirm dock appointment slots for DC-3",
+      ],
+    },
+    agendaTitle: "Daily logistics rhythm",
+    agendaItems: [
+      { label: "Demand", detail: "Review order volume, priority cohorts, and promise exposure." },
+      { label: "Capacity", detail: "Check labor, dock, inventory, and carrier constraints." },
+      { label: "Exceptions", detail: "Triage aged picks, missed pickups, and damaged shipments." },
+      { label: "Recovery", detail: "Assign reroutes, customer comms, and prevention actions." },
+    ],
+    checklistTitle: "Fulfillment checklist",
+    checklistItems: [
+      "Confirm cutoff capacity at each DC",
+      "Escalate carrier misses before service window closes",
+      "Prioritize aged picks by customer promise",
+      "Update customer operations on high-impact delays",
+    ],
+    closeTitle: "Network actions assigned",
+    closeSubtitle: "Protect customer promise by moving exceptions before the cutoff window.",
+  }),
+  scenarioTemplate({
+    id: "energy-grid",
+    title: "Energy Operations Snapshot",
+    category: "Energy",
+    useCase: "Grid operations, generation mix, and reliability briefing",
+    audience: "Energy operations, field crews, reliability engineers, executives",
+    summary:
+      "Energy operations dashboard with load, uptime, alerts, renewable mix, and reliability actions.",
+    tags: ["energy", "grid", "operations"],
+    theme: themes.energy,
+    deckTitle: "Regional Grid Operations Snapshot",
+    deckDescription: "Load, generation mix, reliability alerts, and operating actions for grid review.",
+    dashboardTitle: "Regional Grid - Morning Snapshot",
+    dashboardSubtitle: "North region - peak forecast - field crew readiness",
+    stats: [
+      { value: "78 MW", label: "Current load", style: "accent" },
+      { value: "96%", label: "Asset uptime", style: "good" },
+      { value: "14", label: "Open alerts", style: "warning" },
+      { value: "21%", label: "Renewable mix", style: "good" },
+    ],
+    chart: {
+      title: "Generation mix %",
+      labels: ["Solar", "Wind", "Gas", "Hydro"],
+      values: [18, 21, 47, 14],
+      color: "#facc15",
+    },
+    status: {
+      label: "Reliability watch",
+      status: "Substation 12 transformer temperature trending high",
+      detail: "Crew dispatched - load transfer plan ready if threshold hits",
+      style: "warning",
+    },
+    actionList: {
+      title: "Operations actions",
+      items: [
+        "Stage crew for substation 12 inspection",
+        "Publish peak load conservation message",
+        "Review reserve margin before afternoon forecast",
+      ],
+    },
+    agendaTitle: "Grid briefing flow",
+    agendaItems: [
+      { label: "Load", detail: "Compare current, forecast, and historical demand." },
+      { label: "Supply", detail: "Review generation mix, reserve margin, and constraints." },
+      { label: "Reliability", detail: "Triage alerts, asset risk, and crew availability." },
+      { label: "Communications", detail: "Align public updates and stakeholder notifications." },
+    ],
+    checklistTitle: "Grid ops checklist",
+    checklistItems: [
+      "Validate telemetry from critical substations",
+      "Confirm field crew dispatch windows",
+      "Check reserve margin under peak scenario",
+      "Prepare customer message if conservation is needed",
+    ],
+    closeTitle: "Grid posture set",
+    closeSubtitle: "Keep reliability actions tied to live telemetry and clear operating thresholds.",
+  }),
+  scenarioTemplate({
+    id: "nonprofit-fundraising",
+    title: "Fundraising Campaign Progress",
+    category: "Nonprofit",
+    useCase: "Donor campaign, grant pipeline, and event planning review",
+    audience: "Development leaders, program directors, board members, volunteers",
+    summary:
+      "Fundraising dashboard with raised dollars, goal progress, donor count, events, and outreach actions.",
+    tags: ["nonprofit", "fundraising", "donor-engagement"],
+    theme: themes.nonprofit,
+    deckTitle: "Annual Fund Campaign Progress",
+    deckDescription: "Fundraising goal progress, donor engagement, channel mix, and board actions.",
+    dashboardTitle: "Annual Fund - Mid Campaign",
+    dashboardSubtitle: "Community health initiative - board review pack",
+    stats: [
+      { value: "$840K", label: "Raised", style: "good" },
+      { value: "67%", label: "Goal", style: "accent" },
+      { value: "1,240", label: "Donors", style: "emphasis" },
+      { value: "18", label: "Events", style: "good" },
+    ],
+    chart: {
+      title: "Gifts by channel %",
+      labels: ["Major", "Digital", "Events", "Grants"],
+      values: [44, 23, 18, 15],
+      color: "#f472b6",
+    },
+    status: {
+      label: "Gap to close",
+      status: "$410K remaining; major donor renewals are pacing late",
+      detail: "Board call list assigned - first update due Monday",
+      style: "warning",
+    },
+    actionList: {
+      title: "Development actions",
+      items: [
+        "Launch matched-gift email to lapsed donors",
+        "Assign top 25 renewal calls to board members",
+        "Submit two grant LOIs by Friday",
+      ],
+    },
+    agendaTitle: "Fundraising review flow",
+    agendaItems: [
+      { label: "Goal", detail: "Review total, restricted, unrestricted, and pledge progress." },
+      { label: "Pipeline", detail: "Track donors, grants, events, and renewal likelihood." },
+      { label: "Story", detail: "Align impact proof, beneficiary voice, and board talking points." },
+      { label: "Action", detail: "Assign outreach owners and reporting commitments." },
+    ],
+    checklistTitle: "Campaign checklist",
+    checklistItems: [
+      "Refresh donor segmentation and pledge status",
+      "Confirm board outreach assignments",
+      "Update impact story and proof points",
+      "Publish weekly progress note to volunteers",
+    ],
+    closeTitle: "Campaign focused",
+    closeSubtitle: "Use the dashboard to connect donor outreach with program impact.",
+  }),
+  scenarioTemplate({
+    id: "hospitality-guest-ops",
+    title: "Guest Experience Operations",
+    category: "Hospitality",
+    useCase: "Hotel operations, guest satisfaction, and occupancy review",
+    audience: "General managers, front office, housekeeping, revenue management",
+    summary:
+      "Hospitality dashboard with NPS, occupancy, ADR, VIP arrivals, and service recovery actions.",
+    tags: ["hospitality", "guest-experience", "operations"],
+    theme: themes.hospitality,
+    deckTitle: "Property Operations - Daily Guest Briefing",
+    deckDescription: "Daily hotel operations dashboard for arrivals, satisfaction, rooms, and service recovery.",
+    dashboardTitle: "Downtown Property - Today",
+    dashboardSubtitle: "412 rooms - convention block - VIP arrivals",
+    stats: [
+      { value: "91", label: "Guest NPS", style: "good" },
+      { value: "84%", label: "Occupancy", style: "accent" },
+      { value: "$218", label: "ADR", style: "emphasis" },
+      { value: "5", label: "VIP arrivals", style: "warning" },
+    ],
+    chart: {
+      title: "Bookings by segment",
+      labels: ["Business", "Leisure", "Group", "OTA"],
+      values: [38, 24, 26, 12],
+      color: "#facc15",
+    },
+    status: {
+      label: "Service watch",
+      status: "Housekeeping turn time above target on premium floors",
+      detail: "Runner added - front desk delaying early check-in promises",
+      style: "warning",
+    },
+    actionList: {
+      title: "Guest actions",
+      items: [
+        "Pre-assign rooms for VIP arrivals by noon",
+        "Recover three detractor stays before checkout",
+        "Confirm banquet staffing for evening event",
+      ],
+    },
+    agendaTitle: "Daily property rhythm",
+    agendaItems: [
+      { label: "Arrivals", detail: "Review VIPs, groups, room readiness, and special requests." },
+      { label: "Service", detail: "Track guest feedback, recovery cases, and staffing constraints." },
+      { label: "Revenue", detail: "Monitor occupancy, ADR, pickup, and channel mix." },
+      { label: "Handoff", detail: "Align front office, housekeeping, F&B, and engineering." },
+    ],
+    checklistTitle: "Manager checklist",
+    checklistItems: [
+      "Confirm room readiness for priority arrivals",
+      "Review open service recovery cases",
+      "Validate staffing against event schedule",
+      "Publish shift notes before handoff",
+    ],
+    closeTitle: "Guest day aligned",
+    closeSubtitle: "Use the briefing to turn operational signals into proactive service recovery.",
+  }),
+  scenarioTemplate({
+    id: "real-estate-listing",
+    title: "Real Estate Listing Pipeline",
+    category: "Real Estate",
+    useCase: "Listing portfolio review, offer tracking, and market activity",
+    audience: "Brokerage leaders, agents, transaction coordinators, investors",
+    summary:
+      "Real estate dashboard with pipeline value, active listings, days on market, offers, and follow-up actions.",
+    tags: ["real-estate", "listings", "pipeline"],
+    theme: themes.realEstate,
+    deckTitle: "Metro Listing Pipeline Review",
+    deckDescription: "Listing pipeline, offer activity, market signals, and agent actions dashboard.",
+    dashboardTitle: "Metro Listings - Weekly Review",
+    dashboardSubtitle: "Residential portfolio - premium segment - agent team",
+    stats: [
+      { value: "$48M", label: "Pipeline", style: "good" },
+      { value: "12", label: "Active listings", style: "accent" },
+      { value: "21d", label: "Avg DOM", style: "warning" },
+      { value: "6", label: "Offers", style: "good" },
+    ],
+    chart: {
+      title: "Pipeline by stage",
+      labels: ["Prep", "Live", "Offer", "Close"],
+      values: [8, 12, 6, 4],
+      color: "#34d399",
+    },
+    status: {
+      label: "Listing watch",
+      status: "Oak Ridge property passed 30 days with declining showing rate",
+      detail: "Pricing review scheduled - new media package ready",
+      style: "warning",
+    },
+    actionList: {
+      title: "Agent actions",
+      items: [
+        "Schedule seller pricing conversation",
+        "Refresh digital campaign for Oak Ridge",
+        "Confirm inspection windows for two accepted offers",
+      ],
+    },
+    agendaTitle: "Listing review cadence",
+    agendaItems: [
+      { label: "Market", detail: "Review comps, days on market, and buyer activity." },
+      { label: "Pipeline", detail: "Track prep, live, offer, closing, and fallout risk." },
+      { label: "Marketing", detail: "Assess content, channels, showings, and follow-up." },
+      { label: "Close", detail: "Confirm contingencies, documents, and client commitments." },
+    ],
+    checklistTitle: "Listing checklist",
+    checklistItems: [
+      "Update comps and pricing notes",
+      "Review showing feedback within 24 hours",
+      "Confirm offer deadlines and contingency dates",
+      "Publish seller update with next actions",
+    ],
+    closeTitle: "Pipeline moving",
+    closeSubtitle: "Keep market signals, pricing decisions, and client follow-up in one view.",
+  }),
+  scenarioTemplate({
+    id: "insurance-claims",
+    title: "Insurance Claims Operations",
+    category: "Insurance",
+    useCase: "Claims queue management, reserve exposure, and cycle-time review",
+    audience: "Claims leaders, adjusters, operations, actuarial partners",
+    summary:
+      "Claims operations dashboard with open claims, straight-through rate, cycle time, reserve exposure, and queue actions.",
+    tags: ["insurance", "claims", "operations"],
+    theme: themes.insurance,
+    deckTitle: "Claims Operations - Weekly Review",
+    deckDescription: "Claims queue health, automation rate, reserve exposure, and adjuster actions.",
+    dashboardTitle: "Claims Operations - Week 19",
+    dashboardSubtitle: "Auto - property - liability - catastrophe watch",
+    stats: [
+      { value: "328", label: "Open claims", style: "accent" },
+      { value: "73%", label: "Straight through", style: "good" },
+      { value: "2.4d", label: "Cycle time", style: "emphasis" },
+      { value: "$920K", label: "Reserved", style: "warning" },
+    ],
+    chart: {
+      title: "Claims by type",
+      labels: ["Auto", "Property", "Liability", "Cat"],
+      values: [142, 96, 54, 36],
+      color: "#93c5fd",
+    },
+    status: {
+      label: "Queue risk",
+      status: "Property claims in coastal region aging past SLA",
+      detail: "Adjuster pool rebalanced - vendor inspection backlog remains",
+      style: "warning",
+    },
+    actionList: {
+      title: "Claims actions",
+      items: [
+        "Assign aged property claims to overflow adjusters",
+        "Validate reserve movement on high-exposure files",
+        "Update customer scripts for catastrophe queue",
+      ],
+    },
+    agendaTitle: "Claims review flow",
+    agendaItems: [
+      { label: "Intake", detail: "Review volume, triage quality, and automation exceptions." },
+      { label: "SLA", detail: "Track aging, adjuster load, and vendor dependencies." },
+      { label: "Reserve", detail: "Watch exposure changes, litigation flags, and approvals." },
+      { label: "Customer", detail: "Measure updates, complaints, and service recovery needs." },
+    ],
+    checklistTitle: "Claims ops checklist",
+    checklistItems: [
+      "Refresh aging buckets by type and region",
+      "Review large-loss reserve changes",
+      "Confirm adjuster load balance",
+      "Publish customer update guidance",
+    ],
+    closeTitle: "Claims queue focused",
+    closeSubtitle: "Balance automation, service quality, and reserve control across the queue.",
+  }),
+  scenarioTemplate({
+    id: "telecom-network",
+    title: "Telecom Network Operations",
+    category: "Telecommunications",
+    useCase: "Network reliability, outage response, and planned maintenance briefing",
+    audience: "NOC leaders, field operations, customer care, network engineering",
+    summary:
+      "Network operations dashboard with uptime, latency, fiber cuts, maintenance windows, and field actions.",
+    tags: ["telecommunications", "network", "operations"],
+    theme: themes.telecom,
+    deckTitle: "Network Operations - Regional Review",
+    deckDescription: "Network uptime, traffic, incidents, maintenance windows, and field operations.",
+    dashboardTitle: "Network Operations - Region West",
+    dashboardSubtitle: "Wireless core - transport - access network - customer care",
+    stats: [
+      { value: "99.98%", label: "Uptime", style: "good" },
+      { value: "17ms", label: "Latency", style: "accent" },
+      { value: "6", label: "Fiber cuts", style: "warning" },
+      { value: "24", label: "Planned works", style: "emphasis" },
+    ],
+    chart: {
+      title: "Traffic by region %",
+      labels: ["Metro", "Coastal", "Inland", "Rural"],
+      values: [42, 21, 24, 13],
+      color: "#a78bfa",
+    },
+    status: {
+      label: "NOC watch",
+      status: "Metro north packet loss spike linked to carrier handoff",
+      detail: "Vendor bridge active - reroute ready if loss exceeds threshold",
+      style: "warning",
+    },
+    actionList: {
+      title: "Network actions",
+      items: [
+        "Notify care teams for metro north watchlist",
+        "Stage field crew for coastal splice repair",
+        "Reconfirm maintenance blackout for enterprise accounts",
+      ],
+    },
+    agendaTitle: "Network ops flow",
+    agendaItems: [
+      { label: "Health", detail: "Review uptime, latency, packet loss, and capacity." },
+      { label: "Incidents", detail: "Track active events, vendor bridges, and field dispatch." },
+      { label: "Maintenance", detail: "Validate planned works, blackout windows, and rollback." },
+      { label: "Customer", detail: "Align care scripts, impact messages, and account watchlists." },
+    ],
+    checklistTitle: "NOC briefing checklist",
+    checklistItems: [
+      "Confirm active alarms against customer impact",
+      "Validate field crew ETA and access requirements",
+      "Check maintenance windows for account conflicts",
+      "Publish status update to care and account teams",
+    ],
+    closeTitle: "Network watch aligned",
+    closeSubtitle: "Tie network signals to customer impact and field-ready response actions.",
+  }),
+];
+
+function tieredSectionSlide({ id, title, family, section, sectionIndex, tier, theme }) {
+  return narrativeSlide({
+    id,
+    title,
+    subtitle: `${family} section ${sectionIndex + 1} of ${tier - 4}`,
+    theme,
+    sections: [
+      {
+        label: section.label,
+        detail: section.detail,
+        style: sectionIndex % 3 === 0 ? "accent" : undefined,
+      },
+      {
+        label: "Evidence",
+        detail: `Use source metrics, owner notes, and customer context to support ${section.label.toLowerCase()}.`,
+      },
+      {
+        label: "Decision",
+        detail: "State the decision, recommendation, or facilitation prompt this slide should drive.",
+      },
+      {
+        label: "Follow-through",
+        detail: "Capture owner, date, dependency, and validation signal before moving on.",
+      },
+    ],
+  });
+}
+
+function buildTieredSlides({ id, title, family, tier, theme, sections, chartType = "bar" }) {
+  const normalizedSections = sections.length > 0
+    ? sections
+    : [{ label: "Context", detail: "Frame the audience, decision, and expected outcome." }];
+  const contentSlideCount = tier - 4;
+
+  return [
+    dashboardSlide({
+      id: `${id}-showcase`,
+      title,
+      subtitle: `${tier}-slide ${family} template`,
+      theme,
+      columns: 4,
+      body: [
+        statTile({ value: String(tier), label: "Slides", style: "accent", gridPosition: { column: 1, row: 3 } }),
+        statTile({ value: String(normalizedSections.length), label: "Sections", style: "good", gridPosition: { column: 2, row: 3 } }),
+        statTile({ value: "4", label: "Tier size", style: "emphasis", gridPosition: { column: 3, row: 3 } }),
+        statTile({ value: "1", label: "Decision path", style: "warning", gridPosition: { column: 4, row: 3 } }),
+        chartTile({
+          title: "Content emphasis",
+          chartType,
+          labels: ["Context", "Evidence", "Decision", "Action"],
+          values: [25, 35, 20, 20],
+          color: theme.accentColor,
+          gridPosition: { column: 1, row: 4, columnSpan: 2, rowSpan: 2 },
+        }),
+        listTile({
+          title: "Reusable structure",
+          items: normalizedSections.slice(0, 4).map((section) => section.label),
+          gridPosition: { column: 3, row: 4, columnSpan: 2, rowSpan: 2 },
+        }),
+      ],
+    }),
+    titleSlide(`${id}-title`, title, `${family} framework for Adaptive Slide`, theme),
+    agendaSlide(
+      `${id}-agenda`,
+      `${family} flow`,
+      normalizedSections.slice(0, 4).map((section) => ({
+        label: section.label,
+        detail: section.detail,
+      })),
+    ),
+    ...Array.from({ length: contentSlideCount }, (_, index) => {
+      const section = normalizedSections[index % normalizedSections.length];
+      const sectionNumber = String(index + 1).padStart(2, "0");
+      return tieredSectionSlide({
+        id: `${id}-section-${sectionNumber}`,
+        title: `${section.label} - ${sectionNumber}`,
+        family,
+        section,
+        sectionIndex: index,
+        tier,
+        theme,
+      });
+    }),
+    closeSlide(
+      `${id}-close`,
+      `${family} ready`,
+      `Use this ${tier}-slide deck as a reusable ${family.toLowerCase()} backbone.`,
+      theme,
+    ),
+  ];
+}
+
+function tieredPresentationTemplate({
+  id,
+  title,
+  category = "Presentation templates",
+  family,
+  tier,
+  theme,
+  summary,
+  tags,
+  sections,
+  chartType,
+}) {
+  return {
+    id,
+    title,
+    category,
+    useCase: `${tier}-slide ${family} presentation framework`,
+    audience: "Executives, operators, project teams, and adaptive-card authors",
+    summary,
+    tags: [...tags, `tier-${tier}`, "presentation-template"],
+    deck: deck({
+      title,
+      description: `${tier}-slide ${family} template for Adaptive Slide.`,
+      tags: [...tags, family.toLowerCase().replace(/\s+/g, "-"), `tier-${tier}`],
+      theme,
+      slides: buildTieredSlides({ id, title, family, tier, theme, sections, chartType }),
+    }),
+  };
+}
+
+const presentationFamilyTemplates = [
+  tieredPresentationTemplate({
+    id: "presentation-executive-briefing",
+    title: "Executive Briefing Pack",
+    family: "Executive briefing",
+    tier: 16,
+    theme: themes.generated,
+    summary: "Leadership-ready briefing deck with context, decision asks, risk, and next actions.",
+    tags: ["executive", "briefing", "decision"],
+    chartType: "line",
+    sections: [
+      { label: "Executive context", detail: "Frame the operating moment and strategic choice." },
+      { label: "Performance signal", detail: "Show the few metrics that explain the current state." },
+      { label: "Decision ask", detail: "Make the leadership decision explicit and time-bound." },
+      { label: "Action register", detail: "Assign owners, dates, and validation criteria." },
+    ],
+  }),
+  tieredPresentationTemplate({
+    id: "presentation-qbr",
+    title: "Quarterly Business Review",
+    family: "Quarterly business review",
+    tier: 32,
+    theme: themes.sales,
+    summary: "Full QBR structure for performance, customer health, risks, and next-quarter plan.",
+    tags: ["qbr", "business-review", "customer-health"],
+    chartType: "area",
+    sections: [
+      { label: "Quarter snapshot", detail: "Summarize performance, variance, and major shifts." },
+      { label: "Customer and market", detail: "Connect outcomes to customer, segment, and market signals." },
+      { label: "Pipeline and delivery", detail: "Review committed work, blockers, and quality gates." },
+      { label: "Next-quarter plan", detail: "Convert insights into priorities, owners, and asks." },
+    ],
+  }),
+  tieredPresentationTemplate({
+    id: "presentation-training-course",
+    title: "Training Course Builder",
+    family: "Training course",
+    tier: 32,
+    theme: themes.trainingCourse,
+    summary: "Reusable course deck with modules, examples, practice checks, and validation flow.",
+    tags: ["training", "course", "learning"],
+    chartType: "bar",
+    sections: [
+      { label: "Learning objective", detail: "State the behavior learners should demonstrate." },
+      { label: "Concept module", detail: "Teach the pattern with short examples and practice prompts." },
+      { label: "Applied exercise", detail: "Guide learners through a realistic scenario." },
+      { label: "Validation", detail: "Capture rating, answer, feedback, and completion signal." },
+    ],
+  }),
+  tieredPresentationTemplate({
+    id: "presentation-incident-review",
+    title: "Incident Review Pack",
+    family: "Incident review",
+    tier: 16,
+    theme: themes.support,
+    summary: "Post-incident and live-review structure with impact, timeline, cause, and remediation.",
+    tags: ["incident", "review", "reliability"],
+    chartType: "scatter",
+    sections: [
+      { label: "Impact", detail: "Quantify customer, service, and business impact." },
+      { label: "Timeline", detail: "Track detection, escalation, mitigation, and recovery." },
+      { label: "Root cause", detail: "Separate contributing factors from confirmed causes." },
+      { label: "Remediation", detail: "Assign durable fixes and validation checks." },
+    ],
+  }),
+  tieredPresentationTemplate({
+    id: "presentation-project-status",
+    title: "Project Status Review",
+    family: "Project status",
+    tier: 8,
+    theme: themes.project,
+    summary: "Compact project status deck for milestones, dependencies, risks, and decisions.",
+    tags: ["project", "status", "delivery"],
+    chartType: "bar",
+    sections: [
+      { label: "Milestones", detail: "Show committed dates, completion, and variance." },
+      { label: "Dependencies", detail: "Identify upstream and downstream blockers." },
+      { label: "Risks", detail: "Prioritize risks by impact, probability, and owner." },
+      { label: "Decisions", detail: "Record asks and commitments needed this week." },
+    ],
+  }),
+  tieredPresentationTemplate({
+    id: "presentation-product-launch",
+    title: "Product Launch Plan",
+    family: "Product launch",
+    tier: 16,
+    theme: themes.marketing,
+    summary: "Launch readiness template for audience, positioning, channels, enablement, and gates.",
+    tags: ["product", "launch", "go-to-market"],
+    chartType: "donut",
+    sections: [
+      { label: "Audience", detail: "Define target segment, problem, and launch trigger." },
+      { label: "Positioning", detail: "Clarify message, proof, and competitive frame." },
+      { label: "Readiness", detail: "Track product, sales, support, and channel gates." },
+      { label: "Launch motion", detail: "Map sequence, owners, and measurement plan." },
+    ],
+  }),
+  tieredPresentationTemplate({
+    id: "presentation-customer-proposal",
+    title: "Sales and Customer Proposal",
+    family: "Sales/customer proposal",
+    tier: 16,
+    theme: themes.sales,
+    summary: "Customer proposal deck with context, solution, value proof, plan, and commercial ask.",
+    tags: ["sales", "proposal", "customer"],
+    chartType: "pie",
+    sections: [
+      { label: "Customer context", detail: "Reflect the customer's goals, constraints, and urgency." },
+      { label: "Solution", detail: "Explain the proposed path and why it fits." },
+      { label: "Value proof", detail: "Connect benefits to measurable outcomes." },
+      { label: "Commercial ask", detail: "Clarify scope, next step, timeline, and owner." },
+    ],
+  }),
+  tieredPresentationTemplate({
+    id: "presentation-board-update",
+    title: "Board Update Book",
+    family: "Board update",
+    tier: 64,
+    theme: themes.financial,
+    summary: "Comprehensive board package for strategy, metrics, risks, capital, and decisions.",
+    tags: ["board", "strategy", "governance"],
+    chartType: "line",
+    sections: [
+      { label: "Strategy", detail: "Connect annual priorities to current execution." },
+      { label: "Operating metrics", detail: "Explain performance, trend, variance, and outlook." },
+      { label: "Risk and controls", detail: "Surface material risks, mitigations, and governance asks." },
+      { label: "Capital and decisions", detail: "Frame investment choices and approval paths." },
+    ],
+  }),
+  tieredPresentationTemplate({
+    id: "presentation-architecture-review",
+    title: "Architecture and Design Review",
+    family: "Architecture/design review",
+    tier: 32,
+    theme: themes.engineering,
+    summary: "Technical decision deck for context, constraints, options, tradeoffs, and recommendation.",
+    tags: ["architecture", "design-review", "engineering"],
+    chartType: "bar",
+    sections: [
+      { label: "Context", detail: "Describe problem, users, constraints, and non-goals." },
+      { label: "Options", detail: "Compare viable designs using the same criteria." },
+      { label: "Tradeoffs", detail: "Make cost, risk, reliability, and complexity explicit." },
+      { label: "Recommendation", detail: "State the chosen path and rollout plan." },
+    ],
+  }),
+  tieredPresentationTemplate({
+    id: "presentation-workshop-facilitation",
+    title: "Workshop Facilitation Kit",
+    family: "Workshop/facilitation",
+    tier: 16,
+    theme: themes.education,
+    summary: "Facilitator deck for agenda, prompts, exercises, breakout capture, and synthesis.",
+    tags: ["workshop", "facilitation", "collaboration"],
+    chartType: "donut",
+    sections: [
+      { label: "Setup", detail: "Define room, roles, working agreements, and desired output." },
+      { label: "Prompt", detail: "Frame the question and constraints for each exercise." },
+      { label: "Breakout", detail: "Guide group work, capture notes, and flag blockers." },
+      { label: "Synthesis", detail: "Converge on themes, decisions, and next actions." },
+    ],
+  }),
+];
+
+function layoutGuidanceSlides(template) {
+  const theme = template.deck.theme ?? themes.acPattern;
+  const layoutName = template.title.replace(/\s+layout$/i, "");
+  const slug = template.id.replace(/^ac-layout-/, "");
+  return [
+    {
+      type: "AdaptiveSlide",
+      id: `${slug}-schema-example`,
+      title: `${layoutName} - schema example`,
+      background: gradientBackground(theme),
+      body: [
+        { type: "Tile.Text", text: `${layoutName} schema example`, style: "heading", size: "large", color: "light" },
+        {
+          type: "Tile.Code",
+          title: `${slug}.deck.json`,
+          language: "json",
+          theme: "dark",
+          showLineNumbers: true,
+          code: JSON.stringify(
+            {
+              type: "AdaptiveSlide",
+              layout: { mode: "grid", columns: 4 },
+              body: [
+                { type: "Tile.Text", text: `${layoutName} headline`, style: "heading" },
+                { type: "Tile.Container", style: "accent", items: [] },
+              ],
+            },
+            null,
+            2,
+          ),
+        },
+      ],
+    },
+    narrativeSlide({
+      id: `${slug}-accessibility`,
+      title: `${layoutName} - accessibility`,
+      subtitle: "Make the card usable across Teams, Outlook, web, and host surfaces.",
+      theme,
+      sections: [
+        { label: "Contrast", detail: "Keep text and key affordances readable in dark and light host themes." },
+        { label: "Alt text", detail: "Every image or media poster needs a useful description." },
+        { label: "Keyboard flow", detail: "Inputs and actions should follow the visual reading order." },
+        { label: "Text density", detail: "Use short labels and keep long detail in follow-on cards." },
+      ],
+    }),
+    narrativeSlide({
+      id: `${slug}-host-compatibility`,
+      title: `${layoutName} - host compatibility`,
+      subtitle: "Design for Adaptive Cards 1.6 with graceful host variance.",
+      theme,
+      sections: [
+        { label: "Teams", detail: "Use concise actions and avoid layouts that rely on fixed pixel width." },
+        { label: "Outlook", detail: "Prefer compact text and clear fallbacks for media-heavy cards." },
+        { label: "Power Apps", detail: "Keep data fields explicit so cards can bind to app state." },
+        { label: "MCP App", detail: "Use the same deck JSON for browser preview and assistant-driven presentation." },
+      ],
+    }),
+    narrativeSlide({
+      id: `${slug}-composition`,
+      title: `${layoutName} - composition variants`,
+      subtitle: "Ways to adapt this pattern without changing the semantic contract.",
+      theme,
+      sections: [
+        { label: "Compact", detail: "Reduce supporting copy and keep one primary action." },
+        { label: "Standard", detail: "Use the showcase layout as the default host-safe pattern." },
+        { label: "Expanded", detail: "Add a secondary evidence block or follow-up detail card." },
+        { label: "Interactive", detail: "Add inputs or submit actions only when the user can complete the task inline." },
+      ],
+    }),
+    narrativeSlide({
+      id: `${slug}-quick-reference`,
+      title: `${layoutName} - quick reference`,
+      subtitle: "Implementation checklist for authors.",
+      theme,
+      sections: [
+        { label: "Best for", detail: template.summary },
+        { label: "Use tiles", detail: "Compose with Text, Container, Image, Chart, Media, or Input tiles as needed." },
+        { label: "Validate", detail: "Run the deck validator and inspect the AC 1.6 output before publishing." },
+        { label: "Preview", detail: "Keep slide 0 as the strongest gallery showcase." },
+      ],
+    }),
+  ];
+}
+
+function genericScenarioExpansionSlides(template) {
+  const theme = template.deck.theme ?? themes.generated;
+  return scenarioTierSlides({
+    id: template.id,
+    title: template.title,
+    theme,
+    useCase: template.useCase ?? template.summary ?? template.title,
+    chart: {
+      title: "Decision mix",
+      chartType: "pie",
+      labels: ["Context", "Evidence", "Risk", "Action"],
+      values: [25, 30, 20, 25],
+      color: theme.accentColor,
+    },
+    status: {
+      label: "Watch item",
+      status: template.summary,
+      detail: `Audience: ${template.audience ?? "Template authors and decision makers"}`,
+      style: "warning",
+    },
+    actionList: {
+      title: "Next actions",
+      items: [
+        "Review the dashboard signal",
+        "Assign one accountable owner",
+        "Capture the decision and validation date",
+      ],
+    },
+    agendaItems: [
+      { label: "Context", detail: "Confirm audience, decision, and current state." },
+      { label: "Evidence", detail: "Review metrics, examples, and source-of-truth data." },
+      { label: "Risk", detail: "Prioritize watch items and unresolved blockers." },
+      { label: "Action", detail: "Convert discussion into owners and due dates." },
+    ],
+    checklistItems: [
+      "Validate source data",
+      "Confirm owner",
+      "Record decision",
+      "Publish follow-up",
+    ],
+  });
+}
+
+function normalizeTemplateDeck(template) {
+  const slides = template.deck?.slides ?? [];
+  if (template.category === "Card layouts" && slides.length < 8) {
+    return {
+      ...template,
+      deck: {
+        ...template.deck,
+        slides: [...slides, ...layoutGuidanceSlides(template)].slice(0, 8),
+      },
+    };
+  }
+  if (slides.length === 5) {
+    const [showcase, title, agenda, checklist, close] = slides;
+    return {
+      ...template,
+      deck: {
+        ...template.deck,
+        slides: [
+          showcase,
+          title,
+          agenda,
+          ...genericScenarioExpansionSlides(template),
+          checklist,
+          close,
+        ],
+      },
+    };
+  }
+  return template;
+}
+
+function verticalStrategyTemplate(source) {
+  const categorySlug = slugify(source.category);
+  return tieredPresentationTemplate({
+    id: `${categorySlug}-strategy-review`,
+    title: `${source.category} Strategy Review`,
+    category: source.category,
+    family: `${source.category} strategy review`,
+    tier: 16,
+    theme: source.deck.theme ?? themes.generated,
+    summary: `Sixteen-slide ${source.category.toLowerCase()} strategy template that extends the starter scenario into a deeper operating review.`,
+    tags: [...(source.tags ?? []), "strategy-review", "vertical-pack"],
+    chartType: "area",
+    sections: [
+      { label: "Market and mission", detail: `Frame the ${source.category.toLowerCase()} operating context and audience need.` },
+      { label: "Performance baseline", detail: "Review the metrics, trend, and target variance that define the current state." },
+      { label: "Risk and dependency", detail: "Surface blockers, compliance issues, customer impact, and resource constraints." },
+      { label: "Strategic actions", detail: "Commit to owners, timing, governance path, and validation evidence." },
+    ],
+  });
+}
+
+function buildVerticalStrategyTemplates(templates) {
+  const seenCategories = new Set();
+  return templates
+    .filter((template) => template.category !== "Card layouts")
+    .filter((template) => {
+      if (seenCategories.has(template.category)) return false;
+      seenCategories.add(template.category);
+      return true;
+    })
+    .map(verticalStrategyTemplate);
+}
+
+function expandTemplateLibrary(templates) {
+  return templates.map(normalizeTemplateDeck);
+}
+
 // =============================================================================
 // Industry-tailored templates
 // =============================================================================
 
-export const templateDecks = [
+const baseTemplateDecks = [
   // ---- Training -----------------------------------------------------------
   {
     id: "training-onboarding",
@@ -1850,6 +3493,7 @@ export const templateDecks = [
       ],
     }),
   },
+  ...enterpriseScenarioTemplates,
   {
     id: "ac-layout-hero",
     category: "Card layouts",
@@ -2187,6 +3831,14 @@ export const templateDecks = [
     }),
   },
 ];
+
+const verticalStrategyTemplates = buildVerticalStrategyTemplates(baseTemplateDecks);
+
+export const templateDecks = expandTemplateLibrary([
+  ...baseTemplateDecks,
+  ...presentationFamilyTemplates,
+  ...verticalStrategyTemplates,
+]);
 
 export function findTemplateDeck(id) {
   return templateDecks.find((template) => template.id === id) ?? templateDecks[0];

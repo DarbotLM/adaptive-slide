@@ -40,8 +40,10 @@ AdaptiveDeck
      ├── body: AdaptiveTile[]           ← the bucket
      │    ├── Tile.Text     { text, style, size, weight, color }
      │    ├── Tile.Image    { url, altText, size, caption }
+     │    ├── Tile.Photo    { url, altText, fit, captionPosition }
      │    ├── Tile.Code     { code, language, lineNumbers }
      │    ├── Tile.Chart    { chartType, data, legend }
+     │    ├── Tile.BarGraph / Tile.PieChart / Tile.LineGraph / ...
      │    ├── Tile.Media    { sources, poster, autoplay }
      │    └── Tile.Container
      │         └── items: AdaptiveTile[]    ← recursive
@@ -70,9 +72,9 @@ The rendering phase maps tiles to native AC elements:
 | Tile | AC Element | Notes |
 |------|-----------|-------|
 | `Tile.Text` | `TextBlock` | `style: "heading"` → large bold |
-| `Tile.Image` | `Image` | Direct 1:1 mapping |
+| `Tile.Image` / `Tile.Photo` | `Image` | Direct mapping; photo-only presentation options affect HTML rendering |
 | `Tile.Code` | `CodeBlock` (v1.6) | Falls back to monospace `TextBlock` |
-| `Tile.Chart` | Extension | Server-rendered to `Image` on basic hosts |
+| `Tile.Chart` and chart aliases | Extension / `FactSet` fallback | HTML renderer draws charts; AC fallback exposes values as facts |
 | `Tile.Media` | `Media` | Direct 1:1 mapping |
 | `Tile.Container` | `Container` | Nested tiles become nested AC elements |
 

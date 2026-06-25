@@ -92,14 +92,14 @@ The root object. Contains metadata (title, author), a theme, and an ordered arra
 A single page in the presentation. Each slide is an Adaptive Card bucket — its `body` array is where you place tiles.
 
 ### Tiles
-The atomic content units. Six built-in types:
+The atomic content units. Six canonical types are available, plus semantic aliases for common authoring patterns:
 
 | Tile | Use for |
 |------|---------|
 | `Tile.Text` | Headings, body text, quotes |
-| `Tile.Image` | Photos, diagrams, logos |
+| `Tile.Image` / `Tile.Photo` | Photos, diagrams, logos |
 | `Tile.Code` | Code snippets with syntax highlighting |
-| `Tile.Chart` | Bar, line, pie charts |
+| `Tile.Chart` plus `Tile.BarGraph`, `Tile.PieChart`, `Tile.DonutChart`, `Tile.LineGraph`, `Tile.AreaChart`, `Tile.ScatterPlot` | Bar, line, pie, donut, area, and scatter charts |
 | `Tile.Media` | Video and audio |
 | `Tile.Container` | Group and nest other tiles |
 

@@ -135,8 +135,12 @@ export interface TextTile extends TileBase {
   fontType?: "default" | "monospace";
 }
 
+export type ImageTileType = "Tile.Image" | "Tile.Photo";
+export type ImageStyle = "default" | "photo" | "avatar" | "logo";
+export type ImageFit = "contain" | "cover" | "fill" | "none" | "scale-down";
+
 export interface ImageTile extends TileBase {
-  type: "Tile.Image";
+  type: ImageTileType;
   url: string;
   altText?: string;
   size?: "auto" | "stretch" | "small" | "medium" | "large";
@@ -144,6 +148,11 @@ export interface ImageTile extends TileBase {
   backgroundColor?: string;
   aspectRatio?: string;
   caption?: string;
+  style?: ImageStyle;
+  fit?: ImageFit;
+  height?: string;
+  captionPosition?: "bottom" | "overlay";
+  borderRadius?: string;
 }
 
 export interface CodeTile extends TileBase {
@@ -158,16 +167,85 @@ export interface CodeTile extends TileBase {
   theme?: "light" | "dark" | "auto";
 }
 
-export interface ChartTile extends TileBase {
-  type: "Tile.Chart";
-  chartType: "bar" | "line" | "pie" | "donut" | "area" | "scatter";
+export type ChartElementType =
+  | "Tile.Chart"
+  | "Tile.BarGraph"
+  | "Tile.PieChart"
+  | "Tile.DonutChart"
+  | "Tile.LineGraph"
+  | "Tile.AreaChart"
+  | "Tile.ScatterPlot";
+
+export type ChartType =
+  | "bar"
+  | "bargraph"
+  | "horizontalBar"
+  | "line"
+  | "linegraph"
+  | "pie"
+  | "piechart"
+  | "donut"
+  | "donutchart"
+  | "area"
+  | "areachart"
+  | "scatter"
+  | "scatterplot";
+
+export interface ChartTileBase extends TileBase {
+  type: ChartElementType;
   title?: string;
   data: ChartData;
   showLegend?: boolean;
   showGrid?: boolean;
   colors?: string[];
   aspectRatio?: string;
+  orientation?: "vertical" | "horizontal";
+  holeSize?: number;
 }
+
+export interface GenericChartTile extends ChartTileBase {
+  type: "Tile.Chart";
+  chartType: ChartType;
+}
+
+export interface BarGraphTile extends ChartTileBase {
+  type: "Tile.BarGraph";
+  chartType?: "bar" | "bargraph" | "horizontalBar";
+}
+
+export interface PieChartTile extends ChartTileBase {
+  type: "Tile.PieChart";
+  chartType?: "pie" | "piechart" | "donut" | "donutchart";
+}
+
+export interface DonutChartTile extends ChartTileBase {
+  type: "Tile.DonutChart";
+  chartType?: "donut" | "donutchart";
+}
+
+export interface LineGraphTile extends ChartTileBase {
+  type: "Tile.LineGraph";
+  chartType?: "line" | "linegraph";
+}
+
+export interface AreaChartTile extends ChartTileBase {
+  type: "Tile.AreaChart";
+  chartType?: "area" | "areachart";
+}
+
+export interface ScatterPlotTile extends ChartTileBase {
+  type: "Tile.ScatterPlot";
+  chartType?: "scatter" | "scatterplot";
+}
+
+export type ChartTile =
+  | GenericChartTile
+  | BarGraphTile
+  | PieChartTile
+  | DonutChartTile
+  | LineGraphTile
+  | AreaChartTile
+  | ScatterPlotTile;
 
 export interface ChartData {
   labels: string[];

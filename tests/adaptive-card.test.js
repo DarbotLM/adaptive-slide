@@ -107,6 +107,61 @@ describe("Adaptive Cards 1.6 transformer", () => {
     assert.equal(container.items[1].text, "Caption text");
   });
 
+  it("maps Tile.Photo to Adaptive Cards Image with native image properties", () => {
+    const slide = {
+      type: "AdaptiveSlide",
+      body: [
+        {
+          type: "Tile.Photo",
+          url: "https://example.com/profile.jpg",
+          altText: "Profile photo",
+          style: "avatar",
+          height: "96px",
+        },
+      ],
+    };
+    const card = slideToAdaptiveCard(slide);
+    const image = card.body[0];
+    assert.equal(image.type, "Image");
+    assert.equal(image.url, "https://example.com/profile.jpg");
+    assert.equal(image.altText, "Profile photo");
+    assert.equal(image.style, "person");
+    assert.equal(image.height, "96px");
+  });
+
+  it("maps semantic chart aliases to the Adaptive Cards FactSet fallback", () => {
+    const slide = {
+      type: "AdaptiveSlide",
+      body: [
+        {
+          type: "Tile.PieChart",
+          title: "Share",
+          data: {
+            labels: ["A", "B"],
+            datasets: [{ values: [35, 65] }],
+          },
+        },
+        {
+          type: "Tile.BarGraph",
+          title: "Volume",
+          data: {
+            labels: ["Q1", "Q2"],
+            datasets: [{ values: [10, 20] }],
+          },
+        },
+      ],
+    };
+    const card = slideToAdaptiveCard(slide);
+    assert.equal(card.body.length, 2);
+    assert.equal(card.body[0].type, "Container");
+    assert.equal(card.body[0].items[1].type, "FactSet");
+    assert.deepEqual(card.body[0].items[1].facts, [
+      { title: "A", value: "35" },
+      { title: "B", value: "65" },
+    ]);
+    assert.equal(card.body[1].items[0].text, "Volume");
+  });
+
   it("converts grid layouts into ColumnSet rows", () => {
     const slide = {
       type: "AdaptiveSlide",
@@ -191,6 +246,19 @@ describe("Adaptive Cards 1.6 transformer", () => {
 
 describe("Adaptive Card layout templates", async () => {
   const { templateDecks } = await import("../website/src/data/templateDecks.js");
+  const allowedDeckTiers = new Set([8, 16, 32, 64]);
+
+  function collectTiles(template) {
+    const tiles = [];
+    const visit = (tile) => {
+      tiles.push(tile);
+      for (const child of tile.items ?? []) visit(child);
+    };
+    for (const slide of template.deck.slides) {
+      for (const tile of slide.body ?? []) visit(tile);
+    }
+    return tiles;
+  }
 
   it("registers all eight canonical card layout patterns", () => {
     const layoutDecks = templateDecks.filter((t) => t.category === "Card layouts");
@@ -205,6 +273,106 @@ describe("Adaptive Card layout templates", async () => {
       "ac-layout-quick-input",
       "ac-layout-thumbnail",
     ]);
+    for (const template of layoutDecks) {
+      assert.equal(template.deck.slides.length, 8, `${template.id} should include 8 layout guidance slides`);
+    }
+  });
+
+  it("registers the expanded tiered enterprise template library", () => {
+    const scenarioIds = [
+      "project-portfolio",
+      "marketing-campaign",
+      "hr-workforce",
+      "engineering-release",
+      "devops-service-health",
+      "security-posture",
+      "legal-contract",
+      "logistics-fulfillment",
+      "energy-grid",
+      "nonprofit-fundraising",
+      "hospitality-guest-ops",
+      "real-estate-listing",
+      "insurance-claims",
+      "telecom-network",
+    ];
+    const allIds = templateDecks.map((template) => template.id);
+
+    assert.ok(templateDecks.length >= 65, "expected an extensive library of at least 65 templates");
+    assert.equal(new Set(allIds).size, allIds.length, "template ids must be unique");
+
+    for (const scenarioId of scenarioIds) {
+      const template = templateDecks.find((t) => t.id === scenarioId);
+      assert.ok(template, `missing scenario template ${scenarioId}`);
+      assert.equal(template.deck.slides.length, 8, `${scenarioId} should follow the 8-slide scenario tier`);
+      assert.equal(template.deck.slides[0].layout?.mode, "grid", `${scenarioId} showcase should use grid layout`);
+    }
+  });
+
+  it("uses only supported 8/16/32/64 deck tiers", () => {
+    for (const template of templateDecks) {
+      assert.ok(
+        allowedDeckTiers.has(template.deck.slides.length),
+        `${template.id} should use a supported deck tier`,
+      );
+      assert.ok(template.deck.slides[0].body?.length > 0, `${template.id} should keep slide 0 as a renderable showcase`);
+      if (template.id !== "training-dsl-101") {
+        assert.equal(template.deck.slides[0].layout?.mode, "grid", `${template.id} should keep slide 0 as a grid showcase`);
+      }
+    }
+  });
+
+  it("adds common presentation families and vertical strategy coverage", () => {
+    const familyDecks = templateDecks.filter((t) => t.category === "Presentation templates");
+    assert.equal(familyDecks.length, 10, "expected all common presentation families");
+    assert.ok(familyDecks.some((t) => t.deck.slides.length === 64), "expected a 64-slide comprehensive tier");
+    assert.ok(familyDecks.some((t) => t.deck.slides.length === 32), "expected a 32-slide deep-dive tier");
+    assert.ok(familyDecks.some((t) => t.deck.slides.length === 16), "expected a 16-slide standard tier");
+    assert.ok(familyDecks.some((t) => t.deck.slides.length === 8), "expected an 8-slide compact tier");
+
+    const categoryCounts = new Map();
+    for (const template of templateDecks) {
+      categoryCounts.set(template.category, (categoryCounts.get(template.category) ?? 0) + 1);
+    }
+    for (const [category, count] of categoryCounts) {
+      if (category === "Card layouts" || category === "Presentation templates") continue;
+      assert.ok(count >= 2, `${category} should have multiple templates`);
+    }
+  });
+
+  it("covers all tile families and non-bar chart variants", () => {
+    const tileTypes = new Set();
+    const chartTypes = new Set();
+    let hasSubmitAction = false;
+
+    for (const template of templateDecks) {
+      for (const tile of collectTiles(template)) {
+        tileTypes.add(tile.type);
+        if (tile.type === "Tile.Chart") chartTypes.add(tile.chartType);
+      }
+      for (const slide of template.deck.slides) {
+        hasSubmitAction = hasSubmitAction
+          || (slide.actions ?? []).some((action) => action.type === "Action.Submit");
+      }
+    }
+
+    for (const expected of [
+      "Tile.Chart",
+      "Tile.Code",
+      "Tile.Container",
+      "Tile.Image",
+      "Tile.Input.ChoiceSet",
+      "Tile.Input.Number",
+      "Tile.Input.Text",
+      "Tile.Media",
+      "Tile.Text",
+    ]) {
+      assert.ok(tileTypes.has(expected), `missing tile coverage for ${expected}`);
+    }
+
+    for (const expected of ["area", "bar", "donut", "line", "pie", "scatter"]) {
+      assert.ok(chartTypes.has(expected), `missing chart coverage for ${expected}`);
+    }
+    assert.ok(hasSubmitAction, "expected at least one template with Action.Submit");
   });
 
   it("media layout deck transforms cleanly to AC 1.6 with a Media element", () => {

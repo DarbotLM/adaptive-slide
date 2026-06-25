@@ -110,13 +110,29 @@ function renderImageTile(tile: ImageTile, _theme?: Theme): string {
     auto: "max-width:100%", stretch: "width:100%", small: "max-width:120px",
     medium: "max-width:300px", large: "max-width:500px",
   };
-  const sizeStyle = sizeMap[tile.size ?? "auto"];
+  const imageStyle = tile.style ?? (tile.type === "Tile.Photo" ? "photo" : "default");
+  const sizeStyle = tile.size ? sizeMap[tile.size] : tile.type === "Tile.Photo" ? "width:100%" : sizeMap.auto;
+  const fit = tile.fit ?? (imageStyle === "photo" ? "cover" : "contain");
+  const radius = tile.borderRadius
+    ?? (imageStyle === "avatar" ? "999px" : imageStyle === "logo" ? "0" : imageStyle === "photo" ? "10px" : "4px");
   const bgStyle = tile.backgroundColor ? `background:${tile.backgroundColor};` : "";
-  const caption = tile.caption ? `<figcaption style="text-align:center; font-size:0.85rem; color:#666; margin-top:4px;">${esc(tile.caption)}</figcaption>` : "";
+  const aspect = tile.aspectRatio ? `aspect-ratio:${tile.aspectRatio.replace(":", "/")};` : "";
+  const height = tile.height ? `height:${tile.height};` : "";
+  const hasFrame = Boolean(aspect || height || tile.captionPosition === "overlay");
+  const frameStyle = hasFrame ? `${sizeStyle}; ${aspect} ${height} overflow:hidden; position:relative; border-radius:${radius};` : "";
+  const imgSizing = hasFrame ? "width:100%; height:100%;" : `${sizeStyle}; height:auto;`;
+  const img = `<img src="${esc(tile.url)}" alt="${esc(tile.altText ?? "")}" style="${imgSizing}; object-fit:${fit}; border-radius:${radius}; display:block;" />`;
+  const overlayCaption = tile.caption && tile.captionPosition === "overlay"
+    ? `<figcaption style="position:absolute; left:0; right:0; bottom:0; padding:8px 10px; color:white; background:linear-gradient(transparent, rgba(0,0,0,0.72)); font-size:0.85rem; text-align:left;">${esc(tile.caption)}</figcaption>`
+    : "";
+  const bottomCaption = tile.caption && tile.captionPosition !== "overlay"
+    ? `<figcaption style="text-align:center; font-size:0.85rem; color:#666; margin-top:4px;">${esc(tile.caption)}</figcaption>`
+    : "";
+  const imageHtml = hasFrame ? `<div style="${frameStyle}">${img}${overlayCaption}</div>` : img;
 
   return `<figure class="tile tile-image" style="text-align:${align}; margin:0; ${bgStyle}">
-    <img src="${esc(tile.url)}" alt="${esc(tile.altText ?? "")}" style="${sizeStyle}; height:auto; border-radius:4px;" />
-    ${caption}
+    ${imageHtml}
+    ${bottomCaption}
   </figure>`;
 }
 
@@ -148,58 +164,171 @@ function renderCodeTile(tile: CodeTile, theme?: Theme): string {
   </div>`;
 }
 
-function renderChartTile(tile: ChartTile, theme?: Theme): string {
-  const colors = tile.colors ?? ["#0078d4", "#50e6ff", "#ff8c00", "#107c10", "#d13438", "#5c2d91"];
-  const maxVal = Math.max(...tile.data.datasets.flatMap((d) => d.values), 1);
-  const titleHtml = tile.title ? `<div style="font-weight:600; margin-bottom:8px;">${esc(tile.title)}</div>` : "";
+type NormalizedChartType = "bar" | "line" | "pie" | "donut" | "area" | "scatter";
 
-  if (tile.chartType === "bar") {
-    const barGroups = tile.data.labels.map((label, i) => {
-      const bars = tile.data.datasets.map((ds, di) => {
-        const val = ds.values[i] ?? 0;
-        const pct = (val / maxVal) * 100;
-        const color = ds.color ?? colors[di % colors.length];
-        return `<div style="height:${pct}%; background:${color}; flex:1; border-radius:3px 3px 0 0; min-width:16px;" title="${ds.label ?? ""}: ${val}"></div>`;
-      }).join("");
-      return `<div style="display:flex; flex-direction:column; align-items:stretch; gap:2px; flex:1;">
-        <div style="display:flex; gap:2px; align-items:flex-end; height:120px;">${bars}</div>
-        <div style="text-align:center; font-size:0.75rem; color:#888; margin-top:4px;">${esc(label)}</div>
+const DEFAULT_CHART_COLORS = ["#0078d4", "#50e6ff", "#ff8c00", "#107c10", "#d13438", "#5c2d91"];
+
+const CHART_TYPE_ALIASES: Record<string, NormalizedChartType> = {
+  bar: "bar",
+  bargraph: "bar",
+  horizontalBar: "bar",
+  line: "line",
+  linegraph: "line",
+  pie: "pie",
+  piechart: "pie",
+  donut: "donut",
+  donutchart: "donut",
+  area: "area",
+  areachart: "area",
+  scatter: "scatter",
+  scatterplot: "scatter",
+};
+
+function normalizeChartType(tile: ChartTile): NormalizedChartType {
+  if (tile.type === "Tile.BarGraph") return "bar";
+  if (tile.type === "Tile.PieChart") return tile.chartType === "donut" || tile.chartType === "donutchart" ? "donut" : "pie";
+  if (tile.type === "Tile.DonutChart") return "donut";
+  if (tile.type === "Tile.LineGraph") return "line";
+  if (tile.type === "Tile.AreaChart") return "area";
+  if (tile.type === "Tile.ScatterPlot") return "scatter";
+  return tile.chartType ? CHART_TYPE_ALIASES[tile.chartType] ?? "bar" : "bar";
+}
+
+function chartTitle(tile: ChartTile): string {
+  return tile.title ? `<div style="font-weight:600; margin-bottom:8px;">${esc(tile.title)}</div>` : "";
+}
+
+function chartAspectRatio(tile: ChartTile): string {
+  return (tile.aspectRatio ?? "16:9").replace(":", "/");
+}
+
+function renderVerticalBarChart(tile: ChartTile, colors: string[]): string {
+  const maxVal = Math.max(...tile.data.datasets.flatMap((d) => d.values.map((v) => Math.max(v, 0))), 1);
+  const barGroups = tile.data.labels.map((label, i) => {
+    const bars = tile.data.datasets.map((ds, di) => {
+      const val = ds.values[i] ?? 0;
+      const pct = Math.max((val / maxVal) * 100, 0);
+      const color = ds.color ?? colors[di % colors.length];
+      return `<div style="height:${pct}%; background:${color}; flex:1; border-radius:3px 3px 0 0; min-width:16px;" title="${esc(ds.label ?? "")}: ${val}"></div>`;
+    }).join("");
+    return `<div style="display:flex; flex-direction:column; align-items:stretch; gap:2px; flex:1;">
+      <div style="display:flex; gap:2px; align-items:flex-end; height:120px;">${bars}</div>
+      <div style="text-align:center; font-size:0.75rem; color:#888; margin-top:4px;">${esc(label)}</div>
+    </div>`;
+  }).join("");
+
+  return `<div style="display:flex; gap:8px; align-items:flex-end;">${barGroups}</div>`;
+}
+
+function renderHorizontalBarChart(tile: ChartTile, colors: string[]): string {
+  const maxVal = Math.max(...tile.data.datasets.flatMap((d) => d.values.map((v) => Math.max(v, 0))), 1);
+  const rows = tile.data.labels.map((label, i) => {
+    const bars = tile.data.datasets.map((ds, di) => {
+      const val = ds.values[i] ?? 0;
+      const pct = Math.max((val / maxVal) * 100, 0);
+      const color = ds.color ?? colors[di % colors.length];
+      const series = tile.data.datasets.length > 1 && ds.label ? ` ${esc(ds.label)}` : "";
+      return `<div style="display:grid; grid-template-columns:minmax(72px, auto) 1fr minmax(36px, auto); gap:8px; align-items:center;">
+        <span style="font-size:0.75rem; color:#666; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(label)}${series}</span>
+        <span style="height:10px; background:rgba(128,128,128,0.18); border-radius:999px; overflow:hidden;">
+          <span style="display:block; width:${pct}%; height:100%; background:${color}; border-radius:999px;"></span>
+        </span>
+        <span style="font-size:0.75rem; color:#666; text-align:right;">${val}</span>
       </div>`;
     }).join("");
-
-    const legendHtml = tile.showLegend !== false ? renderLegend(tile.data.datasets, colors) : "";
-    return `<div class="tile tile-chart">${titleHtml}<div style="display:flex; gap:8px; align-items:flex-end;">${barGroups}</div>${legendHtml}</div>`;
-  }
-
-  if (tile.chartType === "pie" || tile.chartType === "donut") {
-    const total = tile.data.datasets[0]?.values.reduce((a, b) => a + b, 0) ?? 1;
-    let cumAngle = 0;
-    const slices = tile.data.datasets[0]?.values.map((val, i) => {
-      const pct = val / total;
-      const startAngle = cumAngle * 360;
-      cumAngle += pct;
-      const endAngle = cumAngle * 360;
-      const color = tile.data.datasets[0]?.color ?? colors[i % colors.length];
-      // Use conic-gradient segments
-      return `${color} ${startAngle}deg ${endAngle}deg`;
-    }) ?? [];
-
-    const hole = tile.chartType === "donut" ? ", radial-gradient(circle, white 40%, transparent 40%)" : "";
-    const bg = `conic-gradient(${slices.join(", ")})${hole}`;
-    const legendHtml = tile.showLegend !== false ? renderPieLegend(tile.data.labels, colors) : "";
-
-    return `<div class="tile tile-chart">${titleHtml}
-      <div style="width:150px; height:150px; border-radius:50%; background:${bg}; margin:0 auto;"></div>
-      ${legendHtml}</div>`;
-  }
-
-  // Fallback: simple data table for other chart types
-  const rows = tile.data.labels.map((label, i) => {
-    const vals = tile.data.datasets.map((ds) => ds.values[i] ?? 0).join("</td><td>");
-    return `<tr><td>${esc(label)}</td><td>${vals}</td></tr>`;
+    return `<div style="display:grid; gap:4px;">${bars}</div>`;
   }).join("");
-  const headers = tile.data.datasets.map((ds) => `<th>${esc(ds.label ?? "")}</th>`).join("");
-  return `<div class="tile tile-chart">${titleHtml}<table style="width:100%; border-collapse:collapse; font-size:0.85rem;"><tr><th></th>${headers}</tr>${rows}</table></div>`;
+  return `<div style="display:grid; gap:8px;">${rows}</div>`;
+}
+
+function renderCartesianChart(tile: ChartTile, chartType: "line" | "area" | "scatter", colors: string[]): string {
+  const width = 360;
+  const height = 180;
+  const pad = 24;
+  const values = tile.data.datasets.flatMap((d) => d.values);
+  const minVal = Math.min(0, ...values);
+  const maxVal = Math.max(1, ...values);
+  const range = maxVal - minVal || 1;
+  const labels = tile.data.labels;
+  const xFor = (i: number) => labels.length <= 1
+    ? width / 2
+    : pad + (i / (labels.length - 1)) * (width - pad * 2);
+  const yFor = (value: number) => height - pad - ((value - minVal) / range) * (height - pad * 2);
+  const baseline = yFor(0);
+  const grid = tile.showGrid === false ? "" : [0, 0.25, 0.5, 0.75, 1].map((step) => {
+    const y = pad + step * (height - pad * 2);
+    return `<line x1="${pad}" y1="${y}" x2="${width - pad}" y2="${y}" stroke="rgba(128,128,128,0.22)" stroke-width="1" />`;
+  }).join("");
+  const xLabels = labels.map((label, i) => {
+    if (labels.length > 6 && i !== 0 && i !== labels.length - 1) return "";
+    return `<text x="${xFor(i)}" y="${height - 5}" text-anchor="middle" font-size="10" fill="#777">${esc(label)}</text>`;
+  }).join("");
+  const series = tile.data.datasets.map((ds, di) => {
+    const color = ds.color ?? colors[di % colors.length];
+    const points = labels.map((_, i) => `${xFor(i)},${yFor(ds.values[i] ?? 0)}`).join(" ");
+    if (chartType === "scatter") {
+      return labels.map((_, i) => `<circle cx="${xFor(i)}" cy="${yFor(ds.values[i] ?? 0)}" r="4" fill="${color}" />`).join("");
+    }
+    const area = chartType === "area"
+      ? `<polygon points="${xFor(0)},${baseline} ${points} ${xFor(labels.length - 1)},${baseline}" fill="${color}" opacity="0.22" />`
+      : "";
+    return `${area}<polyline points="${points}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />`;
+  }).join("");
+
+  return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(tile.title ?? `${chartType} chart`)}" style="width:100%; aspect-ratio:${chartAspectRatio(tile)}; max-height:220px;">
+    ${grid}
+    <line x1="${pad}" y1="${baseline}" x2="${width - pad}" y2="${baseline}" stroke="rgba(128,128,128,0.35)" stroke-width="1" />
+    ${series}
+    ${xLabels}
+  </svg>`;
+}
+
+function renderPieChart(tile: ChartTile, chartType: "pie" | "donut", colors: string[], theme?: Theme): string {
+  const dataset = tile.data.datasets[0];
+  const values = dataset?.values.map((v) => Math.max(v, 0)) ?? [];
+  const total = values.reduce((a, b) => a + b, 0) || 1;
+  let cumAngle = 0;
+  const slices = values.map((val, i) => {
+    const pct = val / total;
+    const startAngle = cumAngle * 360;
+    cumAngle += pct;
+    const endAngle = cumAngle * 360;
+    const color = colors[i % colors.length];
+    return `${color} ${startAngle}deg ${endAngle}deg`;
+  });
+  const holeSize = Math.max(0, Math.min(tile.holeSize ?? 45, 80));
+  const surface = theme?.darkMode ? "#1a1a1a" : "#ffffff";
+  const chartBackground = chartType === "donut"
+    ? `radial-gradient(circle, ${surface} 0 ${holeSize}%, transparent ${holeSize + 1}%), conic-gradient(${slices.join(", ")})`
+    : `conic-gradient(${slices.join(", ")})`;
+  const legendHtml = tile.showLegend !== false ? renderPieLegend(tile.data.labels, colors) : "";
+
+  return `<div style="display:grid; justify-items:center; gap:8px;">
+    <div style="width:150px; height:150px; border-radius:50%; background:${chartBackground};"></div>
+    ${legendHtml}
+  </div>`;
+}
+
+function renderChartTile(tile: ChartTile, theme?: Theme): string {
+  const colors = tile.colors ?? DEFAULT_CHART_COLORS;
+  const chartType = normalizeChartType(tile);
+  const titleHtml = chartTitle(tile);
+  let chartHtml: string;
+
+  if (chartType === "bar") {
+    chartHtml = tile.orientation === "horizontal" || tile.chartType === "horizontalBar"
+      ? renderHorizontalBarChart(tile, colors)
+      : renderVerticalBarChart(tile, colors);
+  } else if (chartType === "pie" || chartType === "donut") {
+    chartHtml = renderPieChart(tile, chartType, colors, theme);
+  } else {
+    chartHtml = renderCartesianChart(tile, chartType, colors);
+  }
+
+  const legendHtml = chartType !== "pie" && chartType !== "donut" && tile.showLegend !== false
+    ? renderLegend(tile.data.datasets, colors)
+    : "";
+  return `<div class="tile tile-chart">${titleHtml}${chartHtml}${legendHtml}</div>`;
 }
 
 function renderLegend(datasets: { label?: string; color?: string }[], colors: string[]): string {
@@ -354,9 +483,16 @@ export function renderTile(tile: Tile, theme?: Theme): string {
   let inner: string;
   switch (tile.type) {
     case "Tile.Text":             inner = renderTextTile(tile, theme); break;
-    case "Tile.Image":            inner = renderImageTile(tile, theme); break;
+    case "Tile.Image":
+    case "Tile.Photo":            inner = renderImageTile(tile, theme); break;
     case "Tile.Code":             inner = renderCodeTile(tile, theme); break;
-    case "Tile.Chart":            inner = renderChartTile(tile, theme); break;
+    case "Tile.Chart":
+    case "Tile.BarGraph":
+    case "Tile.PieChart":
+    case "Tile.DonutChart":
+    case "Tile.LineGraph":
+    case "Tile.AreaChart":
+    case "Tile.ScatterPlot":      inner = renderChartTile(tile, theme); break;
     case "Tile.Media":            inner = renderMediaTile(tile); break;
     case "Tile.Container":        inner = renderContainerTile(tile, theme); break;
     case "Tile.Input.Text":       inner = renderInputTextTile(tile); break;
