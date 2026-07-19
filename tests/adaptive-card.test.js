@@ -1,7 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readdirSync } from "node:fs";
+import { join, resolve } from "node:path";
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
 
 import {
   slideToAdaptiveCard,
@@ -11,6 +13,41 @@ import {
 const EXAMPLE_DECK = JSON.parse(
   readFileSync(resolve(import.meta.dirname, "../examples/hello-world.deck.json"), "utf-8"),
 );
+
+const ROOT = resolve(import.meta.dirname, "..");
+const SCHEMAS_DIR = resolve(ROOT, "schemas");
+
+function loadJson(path) {
+  return JSON.parse(readFileSync(path, "utf-8"));
+}
+
+function loadAdaptiveSchemas(dir, out = []) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      loadAdaptiveSchemas(fullPath, out);
+      continue;
+    }
+    if (entry.name.endsWith(".schema.json") && entry.name !== "adaptive-card-1.6.schema.json") {
+      out.push(loadJson(fullPath));
+    }
+  }
+  return out;
+}
+
+function createAdaptiveSchemaValidator(schemaId) {
+  const ajv = new Ajv2020({ allErrors: true, strict: false });
+  addFormats(ajv);
+  for (const schema of loadAdaptiveSchemas(SCHEMAS_DIR)) {
+    ajv.addSchema(schema);
+  }
+  const validate = ajv.getSchema(schemaId);
+  assert.ok(validate, `expected schema validator for ${schemaId}`);
+  return validate;
+}
+
+const validateSlideSchema = createAdaptiveSchemaValidator("https://adaptive-slide.dev/schemas/slide.schema.json");
+const validateDeckSchema = createAdaptiveSchemaValidator("https://adaptive-slide.dev/schemas/deck.schema.json");
 
 describe("Adaptive Cards 1.6 transformer", () => {
   it("produces a valid AdaptiveCard 1.6 envelope", () => {
@@ -127,6 +164,21 @@ describe("Adaptive Cards 1.6 transformer", () => {
     assert.equal(image.altText, "Profile photo");
     assert.equal(image.style, "person");
     assert.equal(image.height, "96px");
+  });
+
+  it("accepts pixel heights for image tiles", () => {
+    const valid = validateSlideSchema({
+      type: "AdaptiveSlide",
+      body: [
+        {
+          type: "Tile.Image",
+          url: "https://example.com/profile.jpg",
+          height: "96px",
+        },
+      ],
+    });
+
+    assert.equal(valid, true, JSON.stringify(validateSlideSchema.errors, null, 2));
   });
 
   it("maps semantic chart aliases to the Adaptive Cards FactSet fallback", () => {
@@ -472,6 +524,48 @@ describe("Input tile transformer (Tile.Input.*)", () => {
     assert.deepEqual(input.choices[0], { title: "1", value: "1" });
   });
 
+  it("Tile.Input.Date, Tile.Input.Time, and Tile.Input.Toggle map to native AC inputs", () => {
+    const slide = {
+      type: "AdaptiveSlide",
+      body: [
+        {
+          type: "Tile.Input.Date",
+          id: "dueDate",
+          label: "Due date",
+          value: "2026-05-06",
+          min: "2026-01-01",
+          max: "2026-12-31",
+        },
+        {
+          type: "Tile.Input.Time",
+          id: "startTime",
+          label: "Start time",
+          value: "14:30",
+          min: "08:00",
+          max: "18:00",
+        },
+        {
+          type: "Tile.Input.Toggle",
+          id: "confirmed",
+          title: "Confirmed",
+          valueOn: "yes",
+          valueOff: "no",
+          value: "yes",
+          wrap: true,
+        },
+      ],
+    };
+    const card = slideToAdaptiveCard(slide);
+    assert.equal(card.body[0].type, "Input.Date");
+    assert.equal(card.body[0].id, "dueDate");
+    assert.equal(card.body[0].value, "2026-05-06");
+    assert.equal(card.body[1].type, "Input.Time");
+    assert.equal(card.body[1].max, "18:00");
+    assert.equal(card.body[2].type, "Input.Toggle");
+    assert.equal(card.body[2].title, "Confirmed");
+    assert.equal(card.body[2].valueOn, "yes");
+  });
+
   it("preserves Action.Submit with data payload on slides", () => {
     const slide = {
       type: "AdaptiveSlide",
@@ -492,6 +586,177 @@ describe("Input tile transformer (Tile.Input.*)", () => {
       courseId: "training-dsl-101",
       action: "complete-and-credit",
     });
+  });
+});
+
+describe("Native Adaptive Cards bridge", () => {
+  it("passes through native Adaptive Card elements", () => {
+    const slide = {
+      type: "AdaptiveSlide",
+      body: [
+        {
+          type: "Tile.AdaptiveElement",
+          element: {
+            type: "Table",
+            columns: [{ width: 1 }, { width: 1 }],
+            rows: [
+              {
+                type: "TableRow",
+                cells: [
+                  { type: "TableCell", items: [{ type: "TextBlock", text: "Name" }] },
+                  { type: "TableCell", items: [{ type: "TextBlock", text: "Status" }] },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const card = slideToAdaptiveCard(slide);
+    assert.equal(card.body[0].type, "Table");
+    assert.equal(card.body[0].rows[0].cells[1].items[0].text, "Status");
+  });
+
+  it("embeds a native AdaptiveCard tile as a Container with ActionSet", () => {
+    const slide = {
+      type: "AdaptiveSlide",
+      body: [
+        {
+          type: "Tile.AdaptiveCard",
+          card: {
+            type: "AdaptiveCard",
+            version: "1.6",
+            body: [{ type: "TextBlock", text: "Native body", wrap: true }],
+            actions: [
+              {
+                type: "Action.Execute",
+                title: "Run",
+                verb: "runSample",
+                data: { id: 1 },
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const card = slideToAdaptiveCard(slide);
+    const container = card.body[0];
+    assert.equal(container.type, "Container");
+    assert.equal(container.items[0].text, "Native body");
+    assert.equal(container.items[1].type, "ActionSet");
+    assert.equal(container.items[1].actions[0].type, "Action.Execute");
+    assert.equal(container.items[1].actions[0].verb, "runSample");
+  });
+
+  it("forwards native AC actions and still drops slide navigation actions", () => {
+    const slide = {
+      type: "AdaptiveSlide",
+      body: [{ type: "Tile.Text", text: "Actions" }],
+      actions: [
+        {
+          type: "Action.Execute",
+          title: "Execute",
+          id: "executeAction",
+          verb: "approve",
+          associatedInputs: "auto",
+          data: { decision: "approve" },
+        },
+        {
+          type: "Action.ToggleVisibility",
+          title: "Details",
+          targetElements: ["detailsPanel"],
+        },
+        {
+          type: "Action.ShowCard",
+          title: "More",
+          card: {
+            type: "AdaptiveCard",
+            body: [{ type: "TextBlock", text: "More details" }],
+          },
+        },
+        { type: "Action.NextSlide", title: "Next" },
+      ],
+    };
+    const card = slideToAdaptiveCard(slide);
+    assert.equal(card.actions.length, 3);
+    assert.equal(card.actions[0].type, "Action.Execute");
+    assert.equal(card.actions[0].id, "executeAction");
+    assert.equal(card.actions[0].verb, "approve");
+    assert.equal(card.actions[1].type, "Action.ToggleVisibility");
+    assert.deepEqual(card.actions[1].targetElements, ["detailsPanel"]);
+    assert.equal(card.actions[2].type, "Action.ShowCard");
+    assert.equal(card.actions[2].card.type, "AdaptiveCard");
+  });
+
+  it("applies deck-level and slide-level AdaptiveCard root options", () => {
+    const deck = {
+      type: "AdaptiveDeck",
+      version: "1.0.0",
+      metadata: { language: "en-US" },
+      card: {
+        version: "1.6",
+        fallbackText: "Fallback copy",
+        rtl: true,
+        selectAction: {
+          type: "Action.OpenUrl",
+          title: "Docs",
+          url: "https://example.com/docs",
+        },
+      },
+      slides: [
+        {
+          type: "AdaptiveSlide",
+          card: {
+            lang: "fr-FR",
+            verticalContentAlignment: "center",
+          },
+          body: [{ type: "Tile.Text", text: "Bonjour" }],
+        },
+      ],
+    };
+    const card = slideToAdaptiveCard(deck.slides[0], deck);
+    assert.equal(card.fallbackText, "Fallback copy");
+    assert.equal(card.rtl, true);
+    assert.equal(card.version, "1.6");
+    assert.equal(card.lang, "fr-FR");
+    assert.equal(card.verticalContentAlignment, "center");
+    assert.equal(card.selectAction.type, "Action.OpenUrl");
+  });
+
+  it("keeps the top-level Adaptive Card version fixed at 1.6", () => {
+    const deck = {
+      type: "AdaptiveDeck",
+      version: "1.0.0",
+      card: { version: "1.0" },
+      slides: [
+        {
+          type: "AdaptiveSlide",
+          card: { version: "1.5" },
+          body: [{ type: "Tile.Text", text: "Versioned" }],
+        },
+      ],
+    };
+    const card = slideToAdaptiveCard(deck.slides[0], deck);
+    assert.equal(card.version, "1.6");
+  });
+
+  it("drops Action.ShowCard when used as a root selectAction", () => {
+    const slide = {
+      type: "AdaptiveSlide",
+      card: {
+        selectAction: {
+          type: "Action.ShowCard",
+          title: "More",
+          card: {
+            type: "AdaptiveCard",
+            body: [{ type: "TextBlock", text: "Nested" }],
+          },
+        },
+      },
+      body: [{ type: "Tile.Text", text: "Selectable" }],
+    };
+    const card = slideToAdaptiveCard(slide);
+    assert.equal(card.selectAction, undefined);
   });
 });
 
@@ -544,5 +809,67 @@ describe("Training DSL 101 deck (8-card validation pattern)", () => {
       courseId: "training-dsl-101",
       action: "complete-and-credit",
     });
+  });
+});
+
+describe("Freeform layout schema contract", () => {
+  const layeredHeroDeck = JSON.parse(
+    readFileSync(resolve(import.meta.dirname, "../examples/layered-hero.deck.json"), "utf-8"),
+  );
+
+  it("rejects freeform slides whose body tiles omit freeformPosition", () => {
+    const slide = {
+      type: "AdaptiveSlide",
+      layout: { mode: "freeform" },
+      body: [{ type: "Tile.Text", text: "Untethered tile" }],
+    };
+
+    assert.equal(validateSlideSchema(slide), false);
+    assert.ok(
+      validateSlideSchema.errors.some(
+        (error) => error.instancePath === "/body/0" && error.params?.missingProperty === "freeformPosition",
+      ),
+      "expected freeformPosition to be required for each body tile",
+    );
+  });
+
+  it("rejects slides inheriting freeform deck defaults when body tiles omit freeformPosition", () => {
+    const deck = {
+      $schema: "../schemas/deck.schema.json",
+      type: "AdaptiveDeck",
+      version: "1.0.0",
+      defaults: { layout: "freeform" },
+      slides: [
+        {
+          type: "AdaptiveSlide",
+          body: [{ type: "Tile.Text", text: "Untethered tile" }],
+        },
+      ],
+    };
+
+    assert.equal(validateDeckSchema(deck), false);
+  });
+
+  it("allows slides to override freeform deck defaults with a non-freeform layout", () => {
+    const deck = {
+      $schema: "../schemas/deck.schema.json",
+      type: "AdaptiveDeck",
+      version: "1.0.0",
+      defaults: { layout: "freeform" },
+      slides: [
+        {
+          type: "AdaptiveSlide",
+          layout: { mode: "stack" },
+          body: [{ type: "Tile.Text", text: "Stacked tile" }],
+        },
+      ],
+    };
+
+    assert.equal(validateDeckSchema(deck), true, JSON.stringify(validateDeckSchema.errors));
+  });
+
+  it("keeps the layered hero example deck schema-valid", () => {
+    assert.equal(validateDeckSchema(layeredHeroDeck), true, JSON.stringify(validateDeckSchema.errors));
+    assert.equal(validateSlideSchema(layeredHeroDeck.slides[0]), true, JSON.stringify(validateSlideSchema.errors));
   });
 });

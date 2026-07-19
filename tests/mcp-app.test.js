@@ -91,6 +91,42 @@ describe("Transformer", () => {
     assert.ok(html.includes("Right"));
   });
 
+  it("renders native Adaptive Card bridge tiles", () => {
+    const elementTile = {
+      type: "Tile.AdaptiveElement",
+      element: { type: "TextBlock", text: "Native TextBlock", wrap: true },
+    };
+    const cardTile = {
+      type: "Tile.AdaptiveCard",
+      card: {
+        type: "AdaptiveCard",
+        version: "1.6",
+        body: [{ type: "TextBlock", text: "Native card body" }],
+        actions: [{ type: "Action.OpenUrl", title: "Open", url: "https://example.com/" }],
+      },
+    };
+
+    assert.ok(renderTile(elementTile).includes("Native TextBlock"));
+    const cardHtml = renderTile(cardTile);
+    assert.ok(cardHtml.includes("Native card body"));
+    assert.ok(cardHtml.includes("https://example.com/"));
+  });
+
+  it("renders the full native input tile set", () => {
+    assert.ok(renderTile({ type: "Tile.Input.Date", id: "due", value: "2026-05-06" }).includes("type=\"date\""));
+    assert.ok(renderTile({ type: "Tile.Input.Time", id: "time", value: "14:30" }).includes("type=\"time\""));
+    assert.ok(renderTile({ type: "Tile.Input.Toggle", id: "ok", title: "OK" }).includes("type=\"checkbox\""));
+  });
+
+  it("preserves explicit freeform z-index values", () => {
+    const html = renderTile({
+      type: "Tile.Text",
+      text: "Layered",
+      freeformPosition: { x: 10, y: 10, width: 40, height: 20, zIndex: 0 },
+    });
+    assert.ok(html.includes("z-index: 0"));
+  });
+
   it("hides invisible tiles", () => {
     const tile = { type: "Tile.Text", text: "Hidden", isVisible: false };
     const html = renderTile(tile);
@@ -140,6 +176,17 @@ describe("Viewer HTML", () => {
     assert.ok(viewer.includes("ui/initialize"));
     assert.ok(viewer.includes("AdaptiveDeck"));
     assert.ok(viewer.includes("TRANSFORMER"));
+  });
+
+  it("keeps the inlined viewer transformer aligned with native bridge tiles", () => {
+    const viewer = readFileSync(
+      resolve(import.meta.dirname, "../src/plugins/mcp-app/viewer.html"),
+      "utf-8"
+    );
+    assert.ok(viewer.includes("Tile.AdaptiveElement"));
+    assert.ok(viewer.includes("Tile.AdaptiveCard"));
+    assert.ok(viewer.includes("Tile.Input.Date"));
+    assert.ok(viewer.includes("renderAdaptiveElement"));
   });
 });
 

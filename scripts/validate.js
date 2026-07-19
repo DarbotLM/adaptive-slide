@@ -27,8 +27,8 @@ function loadAdaptiveDeckSchemas(dir) {
   const schemas = [];
   for (const entry of readdirSync(dir, { withFileTypes: true, recursive: true })) {
     if (!entry.isFile() || !entry.name.endsWith(".schema.json")) continue;
-    if (entry.name.startsWith("adaptive-card-")) continue; // AC 1.6 lives in its own validator
     const fullPath = join(entry.parentPath ?? entry.path, entry.name);
+    if (resolve(fullPath) === AC_SCHEMA_PATH) continue; // AC 1.6 lives in its own validator
     schemas.push(loadJson(fullPath));
   }
   return schemas;
@@ -116,12 +116,65 @@ function checkAdaptiveCardSlides(label, deck) {
   }
 }
 
+function collectTiles(tiles, out = []) {
+  for (const tile of tiles ?? []) {
+    if (!tile || typeof tile !== "object") continue;
+    out.push(tile);
+    if (Array.isArray(tile.items)) {
+      collectTiles(tile.items, out);
+    }
+  }
+  return out;
+}
+
+function checkNativeAdaptiveCardTiles(label, deck) {
+  let allValid = true;
+  let firstFailureLogged = false;
+  const slides = deck.slides ?? [];
+
+  for (let i = 0; i < slides.length; i++) {
+    const tiles = collectTiles(slides[i].body);
+    for (const tile of tiles) {
+      let candidate;
+      if (tile.type === "Tile.AdaptiveCard") {
+        candidate = tile.card;
+      } else if (tile.type === "Tile.AdaptiveElement") {
+        candidate = {
+          type: "AdaptiveCard",
+          $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+          version: "1.6",
+          body: [tile.element],
+        };
+      }
+      if (!candidate) continue;
+
+      const valid = validateAdaptiveCard(candidate);
+      if (!valid) {
+        allValid = false;
+        if (!firstFailureLogged) {
+          console.log(`FAIL native AC  : ${label} slide[${i}] (${slides[i].id ?? "no-id"})`);
+          reportErrors(label, validateAdaptiveCard.errors);
+          firstFailureLogged = true;
+        }
+      }
+    }
+  }
+
+  if (allValid) {
+    console.log(`PASS native AC  : ${label}`);
+    passed++;
+  } else {
+    failed++;
+  }
+}
+
 // Example decks on disk
 const examples = readdirSync(EXAMPLES_DIR).filter((f) => f.endsWith(".deck.json"));
 for (const file of examples) {
   const deck = loadJson(join(EXAMPLES_DIR, file));
   checkDeck(file, deck);
   checkAdaptiveCardSlides(file, deck);
+  checkNativeAdaptiveCardTiles(file, deck);
 }
 
 // Template decks defined in the website source
@@ -129,6 +182,7 @@ for (const template of templateDecks) {
   const label = `template:${template.id}`;
   checkDeck(label, template.deck);
   checkAdaptiveCardSlides(label, template.deck);
+  checkNativeAdaptiveCardTiles(label, template.deck);
 }
 
 const total = passed + failed;

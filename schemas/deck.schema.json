@@ -26,6 +26,10 @@
     "theme": {
       "$ref": "#/$defs/Theme"
     },
+    "card": {
+      "$ref": "#/$defs/AdaptiveCardOptions",
+      "description": "Default native Adaptive Cards root properties applied to each transformed slide"
+    },
     "slides": {
       "type": "array",
       "minItems": 1,
@@ -39,6 +43,48 @@
       "description": "Default settings inherited by all slides unless overridden"
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "required": ["defaults"],
+        "properties": {
+          "defaults": {
+            "type": "object",
+            "required": ["layout"],
+            "properties": {
+              "layout": {
+                "const": "freeform"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "slides": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "required": ["layout"]
+                },
+                {
+                  "properties": {
+                    "body": {
+                      "type": "array",
+                      "items": {
+                        "required": ["freeformPosition"]
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "DeckMetadata": {
       "type": "object",
@@ -89,6 +135,144 @@
           "enum": ["none", "small", "default", "large"],
           "default": "default"
         }
+      },
+      "additionalProperties": true
+    },
+    "AdaptiveCardOptions": {
+      "type": "object",
+      "description": "Native Adaptive Cards root properties from the bundled AC 1.6 schema, excluding type, $schema, body, and actions because Adaptive Slide owns those fields.",
+      "properties": {
+        "version": { "const": "1.6" },
+        "refresh": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "authentication": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "selectAction": {
+          "$ref": "#/$defs/AdaptiveSelectAction"
+        },
+        "fallbackText": { "type": "string" },
+        "backgroundImage": {
+          "oneOf": [
+            { "type": "string", "format": "uri" },
+            {
+              "type": "object",
+              "required": ["url"],
+              "additionalProperties": true,
+              "properties": {
+                "url": { "type": "string", "format": "uri" },
+                "fillMode": { "type": "string" },
+                "horizontalAlignment": { "type": "string" },
+                "verticalAlignment": { "type": "string" }
+              }
+            }
+          ]
+        },
+        "minHeight": { "type": "string" },
+        "rtl": { "type": "boolean" },
+        "speak": { "type": "string" },
+        "lang": { "type": "string" },
+        "verticalContentAlignment": {
+          "type": "string",
+          "enum": ["top", "center", "bottom"]
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdaptiveAction": {
+      "type": "object",
+      "required": ["type", "title"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["Action.OpenUrl", "Action.Submit", "Action.Execute", "Action.ToggleVisibility", "Action.ShowCard"]
+        },
+        "title": { "type": "string" },
+        "id": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "data": {},
+        "verb": { "type": "string" },
+        "targetElements": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["elementId"],
+                "additionalProperties": true
+              }
+            ]
+          }
+        },
+        "card": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "associatedInputs": {
+          "type": "string",
+          "enum": ["auto", "none"]
+        },
+        "style": { "type": "string" },
+        "mode": { "type": "string" },
+        "isEnabled": { "type": "boolean" },
+        "iconUrl": { "type": "string" },
+        "tooltip": { "type": "string" },
+        "requires": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "fallback": {}
+      },
+      "additionalProperties": true
+    },
+    "AdaptiveSelectAction": {
+      "type": "object",
+      "required": ["type", "title"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["Action.OpenUrl", "Action.Submit", "Action.Execute", "Action.ToggleVisibility"]
+        },
+        "title": { "type": "string" },
+        "id": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "data": {},
+        "verb": { "type": "string" },
+        "targetElements": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["elementId"],
+                "additionalProperties": true
+              }
+            ]
+          }
+        },
+        "associatedInputs": {
+          "type": "string",
+          "enum": ["auto", "none"]
+        },
+        "style": { "type": "string" },
+        "mode": { "type": "string" },
+        "isEnabled": { "type": "boolean" },
+        "iconUrl": { "type": "string" },
+        "tooltip": { "type": "string" },
+        "requires": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "fallback": {}
       },
       "additionalProperties": true
     }

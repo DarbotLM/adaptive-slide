@@ -17,7 +17,12 @@
     { "$ref": "tiles/container-tile.schema.json" },
     { "$ref": "tiles/input-text-tile.schema.json" },
     { "$ref": "tiles/input-number-tile.schema.json" },
-    { "$ref": "tiles/input-choice-set-tile.schema.json" }
+    { "$ref": "tiles/input-choice-set-tile.schema.json" },
+    { "$ref": "tiles/input-date-tile.schema.json" },
+    { "$ref": "tiles/input-time-tile.schema.json" },
+    { "$ref": "tiles/input-toggle-tile.schema.json" },
+    { "$ref": "tiles/adaptive-element-tile.schema.json" },
+    { "$ref": "tiles/adaptive-card-tile.schema.json" }
   ],
   "$defs": {
     "TileBase": {
@@ -47,6 +52,26 @@
           "default": false,
           "description": "Draw a separator line above this tile"
         },
+        "height": {
+          "type": "string",
+          "description": "Adaptive Cards element height behavior"
+        },
+        "requires": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Adaptive Cards feature requirements map"
+        },
+        "fallback": {
+          "description": "Adaptive Cards fallback element or 'drop'",
+          "oneOf": [
+            { "const": "drop" },
+            {
+              "type": "object",
+              "required": ["type"],
+              "additionalProperties": true
+            }
+          ]
+        },
         "gridPosition": {
           "$ref": "#/$defs/GridPosition",
           "description": "Position within a grid layout (only used when slide layout is 'grid')"
@@ -56,6 +81,25 @@
           "description": "Absolute position within a freeform layout"
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["Tile.Image", "Tile.Photo"]
+              }
+            },
+            "required": ["type"]
+          },
+          "else": {
+            "properties": {
+              "height": {
+                "enum": ["auto", "stretch"]
+              }
+            }
+          }
+        }
+      ],
       "required": ["type"]
     },
     "GridPosition": {
@@ -71,10 +115,30 @@
     "FreeformPosition": {
       "type": "object",
       "properties": {
-        "x": { "type": "number", "description": "X position as percentage (0-100)" },
-        "y": { "type": "number", "description": "Y position as percentage (0-100)" },
-        "width": { "type": "number", "description": "Width as percentage (0-100)" },
-        "height": { "type": "number", "description": "Height as percentage (0-100)" },
+        "x": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "X position as percentage of the slide canvas (0-100)"
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Y position as percentage of the slide canvas (0-100)"
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "description": "Width as percentage of the slide canvas (greater than 0, up to 100)"
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "description": "Height as percentage of the slide canvas (greater than 0, up to 100)"
+        },
         "rotation": { "type": "number", "default": 0, "description": "Rotation in degrees" },
         "zIndex": { "type": "integer", "default": 0 }
       },

@@ -4,24 +4,33 @@ A schema-driven presentation builder/viewer built on the [Adaptive Cards](https:
 
 ## Concept
 
-Each **Slide** is an Adaptive Card bucket containing **Adaptive Tiles** — modular content blocks, each defined by its own tile card schema. This makes presentations portable, schema-validated, and renderable across any Adaptive Cards host.
+Each slide is an Adaptive Card bucket containing Adaptive Tiles. Authors can combine stack, grid, and freeform layouts to build anything from linear documents to PowerPoint-style layered hero slides.
 
 ```
 Deck (Presentation)
-  └── Slide[]                        ← sequential pages
-       └── Adaptive Card Bucket      ← the slide IS an Adaptive Card
-            └── Adaptive Tile[]       ← content blocks (text, image, code, chart…)
-                 └── Tile Card Schema ← per-type JSON schema
+  -> Slide[]                        sequential pages
+     -> Adaptive Card Bucket        the slide is an Adaptive Card
+        -> Adaptive Tile[]          content blocks (text, image, code, chart)
+           -> Tile Card Schema      per-type JSON schema
 ```
 
-## Architecture
+## Authoring Model
 
 | Layer | Purpose |
 |-------|---------|
-| **Deck** | Presentation container — metadata, theme, slide ordering |
-| **Slide** | A single page — layout mode, background, transitions |
-| **Bucket** | The Adaptive Card root — composes tiles into a renderable card |
-| **Tile** | Atomic content unit — text, image, code, chart, media, container |
+| **Deck** | Presentation container - metadata, theme, slide ordering |
+| **Slide** | A single page - layout mode, background, transitions |
+| **Bucket** | The Adaptive Card root - composes tiles into a renderable card |
+| **Tile** | Atomic content unit - curated content tile, input tile, or native bridge tile |
+
+### PowerPoint-style layering
+
+- Use `layout.mode: "freeform"` on a slide to place tiles with `freeformPosition`.
+- Use `zIndex` inside `freeformPosition` to overlap tiles in the HTML viewer and MCP app.
+- Use `Tile.Container` to build grouped panels, callouts, or stat blocks.
+- Use `Tile.AdaptiveElement` and `Tile.AdaptiveCard` when you need a native Adaptive Cards element that does not have a curated tile yet.
+
+NOTE: Absolute freeform placement is an HTML viewer feature. The Adaptive Cards 1.6 transformer preserves the same tile content for host rendering, but Adaptive Cards itself does not provide absolute positioning.
 
 ## Quick Start
 
@@ -39,7 +48,7 @@ Adaptive Slide includes an MCP App plugin that transforms deck JSON into interac
 ### How It Works
 
 ```
-Deck JSON ──▶ present-deck tool ──▶ MCP Host ──▶ Viewer (sandboxed iframe)
+Deck JSON -> present-deck tool -> MCP Host -> Viewer (sandboxed iframe)
 ```
 
 1. The MCP server registers a `present-deck` tool with a `ui://` resource URI
@@ -75,7 +84,16 @@ npx cloudflared tunnel --url http://localhost:3001
 | `present-deck` | Renders a deck as an interactive MCP App |
 | `list-slides` | Returns slide metadata (titles, IDs) |
 
-See [`examples/hello-world.deck.json`](examples/hello-world.deck.json) for a working example.
+## Examples
+
+| File | What it demonstrates |
+|------|----------------------|
+| [`examples/hello-world.deck.json`](examples/hello-world.deck.json) | Core curated tiles, grid layout, containers, viewer navigation |
+| [`examples/layered-hero.deck.json`](examples/layered-hero.deck.json) | PowerPoint-style layered slides with `freeformPosition` and `zIndex` |
+| [`examples/native-adaptive-card.deck.json`](examples/native-adaptive-card.deck.json) | Native Adaptive Cards bridge via `Tile.AdaptiveElement`, `Tile.AdaptiveCard`, and native actions |
+| [`examples/training-dsl-101.deck.json`](examples/training-dsl-101.deck.json) | Multi-slide training flow with input tiles and host-handled submit |
+
+If you author a deck under `examples/`, use `../schemas/deck.schema.json` for `$schema`. If you author a deck in the repository root, use `./schemas/deck.schema.json`.
 
 ## Schemas
 

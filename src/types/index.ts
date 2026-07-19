@@ -1,11 +1,12 @@
 // Adaptive Slide type definitions — mirrors the JSON schemas
 
 export interface Deck {
-  $schema?: string;
+  $schema: string;
   type: "AdaptiveDeck";
   version: string;
   metadata?: DeckMetadata;
   theme?: Theme;
+  card?: AdaptiveCardOptions;
   defaults?: SlideDefaults;
   slides: Slide[];
 }
@@ -50,6 +51,7 @@ export interface Slide {
   notes?: string;
   layout?: LayoutConfig;
   background?: Background;
+  card?: AdaptiveCardOptions;
   transition?: Transition;
   body: Tile[];
   actions?: Action[];
@@ -78,11 +80,65 @@ export interface Background {
 }
 
 export interface Action {
-  type: "Action.OpenUrl" | "Action.Submit" | "Action.GoToSlide" | "Action.NextSlide" | "Action.PrevSlide";
+  type:
+    | "Action.OpenUrl"
+    | "Action.Submit"
+    | "Action.Execute"
+    | "Action.ToggleVisibility"
+    | "Action.ShowCard"
+    | "Action.GoToSlide"
+    | "Action.NextSlide"
+    | "Action.PrevSlide";
   title: string;
+  id?: string;
   url?: string;
   targetSlideId?: string;
   data?: unknown;
+  verb?: string;
+  targetElements?: Array<string | { elementId: string; isVisible?: boolean }>;
+  card?: AdaptiveCardDocumentJson;
+  associatedInputs?: "auto" | "none";
+  style?: string;
+  mode?: string;
+  isEnabled?: boolean;
+  iconUrl?: string;
+  tooltip?: string;
+  requires?: Record<string, string>;
+  fallback?: unknown;
+}
+
+export type NativeAdaptiveCardActionType =
+  | "Action.OpenUrl"
+  | "Action.Submit"
+  | "Action.Execute"
+  | "Action.ToggleVisibility"
+  | "Action.ShowCard";
+
+export type NativeAdaptiveCardSelectActionType = Exclude<
+  NativeAdaptiveCardActionType,
+  "Action.ShowCard"
+>;
+
+export type NativeAdaptiveCardAction = Action & { type: NativeAdaptiveCardActionType };
+export type NativeAdaptiveCardSelectAction = Action & { type: NativeAdaptiveCardSelectActionType };
+
+export type AdaptiveCardJson = Record<string, unknown>;
+export type AdaptiveCardElementJson = { type: string } & Record<string, unknown>;
+export type AdaptiveCardDocumentJson = { type: "AdaptiveCard" } & Record<string, unknown>;
+
+export interface AdaptiveCardOptions {
+  version?: "1.6";
+  refresh?: AdaptiveCardJson;
+  authentication?: AdaptiveCardJson;
+  selectAction?: NativeAdaptiveCardSelectAction;
+  fallbackText?: string;
+  backgroundImage?: string | AdaptiveCardJson;
+  minHeight?: string;
+  rtl?: boolean;
+  speak?: string;
+  lang?: string;
+  verticalContentAlignment?: "top" | "center" | "bottom";
+  metadata?: AdaptiveCardJson;
 }
 
 // Tile union type
@@ -95,13 +151,21 @@ export type Tile =
   | ContainerTile
   | InputTextTile
   | InputNumberTile
-  | InputChoiceSetTile;
+  | InputChoiceSetTile
+  | InputDateTile
+  | InputTimeTile
+  | InputToggleTile
+  | AdaptiveElementTile
+  | AdaptiveCardTile;
 
-interface TileBase {
+interface TileBase<THeight extends string = "auto" | "stretch"> {
   id?: string;
   isVisible?: boolean;
   spacing?: Spacing;
   separator?: boolean;
+  height?: THeight;
+  requires?: Record<string, string>;
+  fallback?: "drop" | AdaptiveCardElementJson;
   gridPosition?: GridPosition;
   freeformPosition?: FreeformPosition;
 }
@@ -114,11 +178,16 @@ export interface GridPosition {
 }
 
 export interface FreeformPosition {
+  /** X position as a percentage of the slide canvas, 0-100 inclusive. */
   x: number;
+  /** Y position as a percentage of the slide canvas, 0-100 inclusive. */
   y: number;
+  /** Width as a percentage of the slide canvas, greater than 0 and up to 100. */
   width: number;
+  /** Height as a percentage of the slide canvas, greater than 0 and up to 100. */
   height: number;
   rotation?: number;
+  /** Layering order within freeform layouts; larger values render above smaller ones. */
   zIndex?: number;
 }
 
@@ -139,7 +208,7 @@ export type ImageTileType = "Tile.Image" | "Tile.Photo";
 export type ImageStyle = "default" | "photo" | "avatar" | "logo";
 export type ImageFit = "contain" | "cover" | "fill" | "none" | "scale-down";
 
-export interface ImageTile extends TileBase {
+export interface ImageTile extends TileBase<string> {
   type: ImageTileType;
   url: string;
   altText?: string;
@@ -333,4 +402,41 @@ export interface InputChoiceSetTile extends InputTileBase {
   /** AC 1.6: compact (dropdown), expanded (radios/checkboxes), filtered (autocomplete). */
   style?: "compact" | "expanded" | "filtered";
   wrap?: boolean;
+}
+
+export interface InputDateTile extends InputTileBase {
+  type: "Tile.Input.Date";
+  placeholder?: string;
+  /** YYYY-MM-DD */
+  value?: string;
+  min?: string;
+  max?: string;
+}
+
+export interface InputTimeTile extends InputTileBase {
+  type: "Tile.Input.Time";
+  placeholder?: string;
+  /** HH:mm */
+  value?: string;
+  min?: string;
+  max?: string;
+}
+
+export interface InputToggleTile extends InputTileBase {
+  type: "Tile.Input.Toggle";
+  title: string;
+  value?: string;
+  valueOn?: string;
+  valueOff?: string;
+  wrap?: boolean;
+}
+
+export interface AdaptiveElementTile extends TileBase {
+  type: "Tile.AdaptiveElement";
+  element: AdaptiveCardElementJson;
+}
+
+export interface AdaptiveCardTile extends TileBase {
+  type: "Tile.AdaptiveCard";
+  card: AdaptiveCardDocumentJson;
 }

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adaptive-slide.dev/schemas/tiles/adaptive-card-tile.schema.json",
+  "title": "Native Adaptive Card Tile",
+  "description": "A bridge tile for a complete native AdaptiveCard. The transformer embeds the card body and actions as a card-in-card container.",
+  "type": "object",
+  "required": ["type", "card"],
+  "allOf": [{ "$ref": "../tile.schema.json#/$defs/TileBase" }],
+  "properties": {
+    "type": { "const": "Tile.AdaptiveCard" },
+    "card": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "AdaptiveCard" }
+      },
+      "additionalProperties": true,
+      "description": "Complete native AdaptiveCard JSON validated against the bundled AC 1.6 schema during npm run validate."
+    }
+  },
+  "unevaluatedProperties": false
+}

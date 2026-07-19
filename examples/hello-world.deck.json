@@ -1,9 +1,9 @@
 {
-  "$schema": "./schemas/deck.schema.json",
+  "$schema": "../schemas/deck.schema.json",
   "type": "AdaptiveDeck",
   "version": "1.0.0",
   "metadata": {
-    "title": "Hello World — Adaptive Slide Demo",
+    "title": "Hello World - Adaptive Slide Demo",
     "description": "A sample deck exercising all built-in tile types",
     "author": "Adaptive Slide",
     "tags": ["demo", "example", "hello-world"]
@@ -148,12 +148,12 @@
           "items": [
             {
               "type": "Tile.Text",
-              "text": "**Left column** — text content with markdown support",
+              "text": "**Left column** - text content with markdown support",
               "style": "body"
             },
             {
               "type": "Tile.Text",
-              "text": "**Right column** — tiles nest inside containers for complex layouts",
+              "text": "**Right column** - tiles nest inside containers for complex layouts",
               "style": "body"
             }
           ]
@@ -242,7 +242,7 @@
         },
         {
           "type": "Tile.Text",
-          "text": "Built on Adaptive Cards",
+          "text": "Built with Adaptive Cards",
           "style": "body",
           "color": "light",
           "horizontalAlignment": "center"

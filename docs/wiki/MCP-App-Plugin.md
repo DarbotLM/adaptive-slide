@@ -5,20 +5,10 @@ The MCP App plugin transforms Adaptive Slide deck JSON into interactive presenta
 ## Overview
 
 ```
-┌───────────────┐     ┌───────────────┐     ┌─────────────────────────┐
-│  Deck JSON    │ ──▶ │  MCP Server   │ ──▶ │  MCP Host (Claude, etc) │
-│  (.deck.json) │     │  /mcp         │     │  Renders sandboxed      │
-│               │     │               │     │  iframe viewer           │
-└───────────────┘     │  Tools:       │     └─────────────────────────┘
-                      │  present-deck │              │
-                      │  list-slides  │              ▼
-                      │               │     ┌─────────────────────────┐
-                      │  Resource:    │     │  Viewer MCP App         │
-                      │  ui://...     │ ──▶ │  - Slide navigation     │
-                      └───────────────┘     │  - Keyboard shortcuts   │
-                                            │  - Theme support        │
-                                            │  - All 6 tile types     │
-                                            └─────────────────────────┘
+Deck JSON (.deck.json)
+  -> MCP Server (/mcp, present-deck, list-slides, ui://adaptive-slide/viewer)
+  -> MCP Host
+  -> Viewer MCP App
 ```
 
 ## How It Works
@@ -82,7 +72,7 @@ PORT=8080 npm run serve
 
 1. Start the server locally
 2. Create a tunnel: `npx cloudflared tunnel --url http://localhost:3001`
-3. In Claude Desktop → Settings → Connectors → Add Custom Connector
+3. In Claude Desktop > Settings > Connectors > Add Custom Connector
 4. Paste the tunnel URL (e.g., `https://random-name.trycloudflare.com/mcp`)
 
 ### Connect to VS Code Copilot
@@ -104,12 +94,15 @@ The viewer is a self-contained HTML page with:
 
 - **Slide navigation**: Previous/Next buttons, slide counter
 - **Keyboard shortcuts**: Arrow keys, Space, Home, End, Escape
-- **Slide picker**: Click ☰ to jump to any slide
+- **Slide picker**: Use the slide picker menu to jump to any slide
 - **Theme support**: Applies deck theme (colors, fonts, dark mode)
 - **Speaker notes**: Displays notes panel when slides have notes
-- **All tile types**: Text, Image, Code, Chart, Media, Container
+- **Layered layouts**: Stack, grid, and freeform slides, including `zIndex` overlap in freeform mode
+- **Tile coverage**: Curated content tiles, input tiles, and native bridge tiles
 - **Layout modes**: Stack, Grid, Freeform
 - **Transitions**: Fade animation between slides
+
+NOTE: Freeform placement is implemented by the HTML viewer. When you transform a slide to plain Adaptive Cards 1.6 JSON for a host surface, the content is preserved but absolute positioning is not.
 
 ## Architecture
 
@@ -138,9 +131,11 @@ The viewer (`src/plugins/mcp-app/viewer.html`) is fully self-contained:
 - Direct postMessage MCP App protocol implementation (no SDK dependency)
 - Supports both MCP host communication and direct postMessage deck loading
 
+Presentation-only navigation actions (`Action.GoToSlide`, `Action.NextSlide`, `Action.PrevSlide`) are handled by the viewer. Native Adaptive Cards actions (`Action.OpenUrl`, `Action.Submit`, `Action.Execute`, `Action.ToggleVisibility`, `Action.ShowCard`) flow through to the generated Adaptive Card output when the action exists in AC 1.6.
+
 ## Security
 
 - Viewer runs in a sandboxed iframe (MCP host enforced)
 - No external scripts or resources loaded
 - All user content is HTML-escaped before rendering
-- No JavaScript execution from deck data — tiles are declarative only
+- No JavaScript execution from deck data - tiles are declarative only

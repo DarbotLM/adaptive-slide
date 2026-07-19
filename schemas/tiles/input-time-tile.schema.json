@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adaptive-slide.dev/schemas/tiles/input-time-tile.schema.json",
+  "title": "Input Time Tile",
+  "description": "A time picker input. Compiles to AC 1.6 Input.Time.",
+  "type": "object",
+  "required": ["type", "id"],
+  "allOf": [{ "$ref": "../tile.schema.json#/$defs/TileBase" }],
+  "properties": {
+    "type": { "const": "Tile.Input.Time" },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique input id - the key under which the value is submitted to the host."
+    },
+    "label": { "type": "string", "description": "Human-readable label rendered above the input." },
+    "placeholder": { "type": "string", "description": "Ghost text shown when empty." },
+    "value": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "description": "Initial time value in HH:mm format."
+    },
+    "min": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "description": "Inclusive lower time bound in HH:mm format."
+    },
+    "max": {
+      "type": "string",
+      "pattern": "^\\d{2}:\\d{2}$",
+      "description": "Inclusive upper time bound in HH:mm format."
+    },
+    "isRequired": { "type": "boolean", "default": false },
+    "errorMessage": { "type": "string" }
+  },
+  "unevaluatedProperties": false
+}

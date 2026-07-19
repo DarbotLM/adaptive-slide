@@ -1,0 +1,133 @@
+{
+  "$schema": "../schemas/deck.schema.json",
+  "type": "AdaptiveDeck",
+  "version": "1.0.0",
+  "metadata": {
+    "title": "Layered Hero Patterns",
+    "description": "Shows how to author PowerPoint-style layered slides with freeform positioning and zIndex.",
+    "author": "Adaptive Slide",
+    "tags": ["layered", "freeform", "hero", "example"]
+  },
+  "theme": {
+    "name": "Layered Hero",
+    "primaryColor": "#1d4ed8",
+    "accentColor": "#38bdf8",
+    "backgroundColor": "#0f172a",
+    "fontFamily": "Segoe UI, sans-serif",
+    "darkMode": true
+  },
+  "defaults": {
+    "layout": "stack",
+    "transition": "fade",
+    "padding": "default"
+  },
+  "slides": [
+    {
+      "type": "AdaptiveSlide",
+      "id": "layered-hero",
+      "title": "Layered hero slide",
+      "layout": {
+        "mode": "freeform"
+      },
+      "background": {
+        "gradient": {
+          "type": "linear",
+          "colors": ["#0f172a", "#1d4ed8", "#38bdf8"],
+          "angle": 135
+        }
+      },
+      "body": [
+        {
+          "type": "Tile.Container",
+          "style": "accent",
+          "minHeight": "100%",
+          "freeformPosition": { "x": 8, "y": 18, "width": 40, "height": 44, "zIndex": 1 },
+          "items": [
+            {
+              "type": "Tile.Text",
+              "text": "Backdrop panel",
+              "style": "caption",
+              "color": "light",
+              "weight": "bolder"
+            },
+            {
+              "type": "Tile.Text",
+              "text": "Use a container as the visual layer behind the headline and supporting copy.",
+              "style": "body",
+              "color": "light"
+            }
+          ]
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Build layered presentations from Adaptive Cards",
+          "style": "heading",
+          "size": "extraLarge",
+          "color": "light",
+          "freeformPosition": { "x": 10, "y": 10, "width": 70, "height": 16, "zIndex": 3 }
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Set `layout.mode` to `freeform`, position each tile with percentages, and use `zIndex` to control overlap in the HTML viewer and MCP app.",
+          "style": "body",
+          "color": "light",
+          "freeformPosition": { "x": 10, "y": 64, "width": 54, "height": 18, "zIndex": 3 }
+        },
+        {
+          "type": "Tile.Image",
+          "url": "https://adaptivecards.io/content/cats/2.png",
+          "altText": "Decorative sample image showing overlap with the text panel",
+          "size": "stretch",
+          "freeformPosition": { "x": 62, "y": 16, "width": 26, "height": 48, "zIndex": 2 }
+        },
+        {
+          "type": "Tile.Text",
+          "text": "Important: native Adaptive Cards hosts still receive the same tile content, but Adaptive Cards 1.6 does not preserve absolute placement.",
+          "style": "caption",
+          "color": "light",
+          "freeformPosition": { "x": 10, "y": 88, "width": 82, "height": 8, "zIndex": 3 }
+        }
+      ],
+      "notes": "Freeform and zIndex are presentation-layer features. Keep the source order readable for hosts that do not support overlap."
+    },
+    {
+      "type": "AdaptiveSlide",
+      "id": "authoring-rules",
+      "title": "Authoring rules",
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Layering checklist",
+          "style": "heading",
+          "size": "large"
+        },
+        {
+          "type": "Tile.Container",
+          "style": "emphasis",
+          "items": [
+            {
+              "type": "Tile.Text",
+              "text": "1. Keep the reading order meaningful in `body[]` so non-layered hosts still make sense.",
+              "style": "body"
+            },
+            {
+              "type": "Tile.Text",
+              "text": "2. Use percentages in `freeformPosition` so slides scale across screen sizes.",
+              "style": "body"
+            },
+            {
+              "type": "Tile.Text",
+              "text": "3. Use `Tile.Container` for grouped panels, callouts, and stat blocks.",
+              "style": "body"
+            },
+            {
+              "type": "Tile.Text",
+              "text": "4. Reach for `Tile.AdaptiveElement` or `Tile.AdaptiveCard` when you need a native bridge element the curated tiles do not cover.",
+              "style": "body"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

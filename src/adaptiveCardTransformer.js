@@ -50,6 +50,28 @@ const CONTAINER_STYLE_MAP = {
   accent: "accent",
 };
 
+const CARD_OPTION_PROPS = [
+  "refresh",
+  "authentication",
+  "selectAction",
+  "fallbackText",
+  "backgroundImage",
+  "minHeight",
+  "rtl",
+  "speak",
+  "lang",
+  "verticalContentAlignment",
+  "metadata",
+];
+
+function isObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function cloneJson(value) {
+  return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+}
+
 // AC 1.6 CodeBlock supported language enum.
 const AC_CODE_LANGUAGES = new Set([
   "PlainText", "Bash", "C", "Cpp", "CSharp", "Css", "CMake", "Dart", "Dockerfile",
@@ -94,6 +116,9 @@ function applyCommonProps(element, tile) {
   if (tile.spacing && SPACING_MAP[tile.spacing]) element.spacing = SPACING_MAP[tile.spacing];
   if (tile.separator) element.separator = true;
   if (tile.isVisible === false) element.isVisible = false;
+  if (tile.height) element.height = tile.height;
+  if (tile.requires) element.requires = cloneJson(tile.requires);
+  if (tile.fallback) element.fallback = cloneJson(tile.fallback);
   return element;
 }
 
@@ -296,6 +321,71 @@ function tileInputChoiceSetToInput(tile) {
   return applyCommonProps(input, tile);
 }
 
+function tileInputDateToInput(tile) {
+  const input = { type: "Input.Date" };
+  if (tile.placeholder) input.placeholder = tile.placeholder;
+  if (tile.value !== undefined) input.value = String(tile.value);
+  if (tile.min !== undefined) input.min = String(tile.min);
+  if (tile.max !== undefined) input.max = String(tile.max);
+  applyInputCommon(input, tile);
+  return applyCommonProps(input, tile);
+}
+
+function tileInputTimeToInput(tile) {
+  const input = { type: "Input.Time" };
+  if (tile.placeholder) input.placeholder = tile.placeholder;
+  if (tile.value !== undefined) input.value = String(tile.value);
+  if (tile.min !== undefined) input.min = String(tile.min);
+  if (tile.max !== undefined) input.max = String(tile.max);
+  applyInputCommon(input, tile);
+  return applyCommonProps(input, tile);
+}
+
+function tileInputToggleToInput(tile) {
+  const input = {
+    type: "Input.Toggle",
+    title: tile.title ?? "",
+  };
+  if (tile.value !== undefined) input.value = String(tile.value);
+  if (tile.valueOn !== undefined) input.valueOn = String(tile.valueOn);
+  if (tile.valueOff !== undefined) input.valueOff = String(tile.valueOff);
+  if (tile.wrap === true) input.wrap = true;
+  applyInputCommon(input, tile);
+  return applyCommonProps(input, tile);
+}
+
+function tileAdaptiveElementToElement(tile) {
+  if (!isObject(tile.element) || typeof tile.element.type !== "string") return null;
+  return applyCommonProps(cloneJson(tile.element), tile);
+}
+
+function tileAdaptiveCardToContainer(tile) {
+  if (!isObject(tile.card)) return null;
+  const sourceCard = cloneJson(tile.card);
+  const items = Array.isArray(sourceCard.body)
+    ? sourceCard.body.filter((item) => isObject(item) && typeof item.type === "string")
+    : [];
+  const container = { type: "Container", items };
+  if (sourceCard.backgroundImage) container.backgroundImage = sourceCard.backgroundImage;
+  if (sourceCard.minHeight) container.minHeight = sourceCard.minHeight;
+  if (sourceCard.selectAction) {
+    const selectAction = actionToAdaptiveCardAction(sourceCard.selectAction);
+    if (selectAction && selectAction.type !== "Action.ShowCard") {
+      container.selectAction = selectAction;
+    }
+  }
+  if (sourceCard.verticalContentAlignment) {
+    container.verticalContentAlignment = sourceCard.verticalContentAlignment;
+  }
+  const actions = Array.isArray(sourceCard.actions)
+    ? sourceCard.actions.map(actionToAdaptiveCardAction).filter(Boolean)
+    : [];
+  if (actions.length) {
+    container.items.push({ type: "ActionSet", actions });
+  }
+  return applyCommonProps(container, tile);
+}
+
 function tileToElement(tile) {
   if (!tile) return null;
   switch (tile.type) {
@@ -324,6 +414,16 @@ function tileToElement(tile) {
       return tileInputNumberToInput(tile);
     case "Tile.Input.ChoiceSet":
       return tileInputChoiceSetToInput(tile);
+    case "Tile.Input.Date":
+      return tileInputDateToInput(tile);
+    case "Tile.Input.Time":
+      return tileInputTimeToInput(tile);
+    case "Tile.Input.Toggle":
+      return tileInputToggleToInput(tile);
+    case "Tile.AdaptiveElement":
+      return tileAdaptiveElementToElement(tile);
+    case "Tile.AdaptiveCard":
+      return tileAdaptiveCardToContainer(tile);
     default:
       return null;
   }
@@ -331,17 +431,50 @@ function tileToElement(tile) {
 
 function actionToAdaptiveCardAction(action) {
   if (!action) return null;
+  const copyActionProps = (props) => {
+    const out = { type: action.type, title: action.title };
+    for (const prop of props) {
+      if (action[prop] !== undefined) out[prop] = cloneJson(action[prop]);
+    }
+    for (const prop of ["id", "style", "mode", "isEnabled", "iconUrl", "tooltip", "requires", "fallback"]) {
+      if (action[prop] !== undefined) out[prop] = cloneJson(action[prop]);
+    }
+    return out;
+  };
   if (action.type === "Action.OpenUrl" && action.url) {
-    return { type: "Action.OpenUrl", title: action.title, url: action.url };
+    return copyActionProps(["url"]);
   }
   if (action.type === "Action.Submit") {
-    const out = { type: "Action.Submit", title: action.title };
-    if (action.data !== undefined) out.data = action.data;
-    return out;
+    return copyActionProps(["data", "associatedInputs"]);
+  }
+  if (action.type === "Action.Execute") {
+    return copyActionProps(["verb", "data", "associatedInputs"]);
+  }
+  if (action.type === "Action.ToggleVisibility" && Array.isArray(action.targetElements)) {
+    return copyActionProps(["targetElements"]);
+  }
+  if (action.type === "Action.ShowCard" && isObject(action.card)) {
+    return copyActionProps(["card"]);
   }
   // Action.GoToSlide / Action.NextSlide / Action.PrevSlide are Adaptive Slide
   // navigation actions and have no AC 1.6 equivalent. Skip them.
   return null;
+}
+
+function applyCardOptions(card, options) {
+  if (!isObject(options)) return;
+  for (const prop of CARD_OPTION_PROPS) {
+    if (options[prop] !== undefined) {
+      if (prop === "selectAction") {
+        const selectAction = actionToAdaptiveCardAction(options[prop]);
+        if (selectAction && selectAction.type !== "Action.ShowCard") {
+          card.selectAction = selectAction;
+        }
+      } else {
+        card[prop] = cloneJson(options[prop]);
+      }
+    }
+  }
 }
 
 // Convert a grid-layout slide body into an AC 1.6 element list.
@@ -417,6 +550,7 @@ export function slideToAdaptiveCard(slide, deck) {
     body: slideBodyToElements(slide),
   };
   if (deck?.metadata?.language) card.lang = deck.metadata.language;
+  applyCardOptions(card, deck?.card);
   if (slide.background?.image?.url) {
     const backgroundImage = { url: slide.background.image.url };
     if (slide.background.image.fillMode) {
@@ -424,6 +558,7 @@ export function slideToAdaptiveCard(slide, deck) {
     }
     card.backgroundImage = backgroundImage;
   }
+  applyCardOptions(card, slide.card);
   const actions = (slide.actions || []).map(actionToAdaptiveCardAction).filter(Boolean);
   if (actions.length) card.actions = actions;
   return card;

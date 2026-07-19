@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adaptive-slide.dev/schemas/tiles/adaptive-element-tile.schema.json",
+  "title": "Native Adaptive Card Element Tile",
+  "description": "A bridge tile for any native Adaptive Cards 1.6 element defined by the bundled AdaptiveCards schema library.",
+  "type": "object",
+  "required": ["type", "element"],
+  "allOf": [{ "$ref": "../tile.schema.json#/$defs/TileBase" }],
+  "properties": {
+    "type": { "const": "Tile.AdaptiveElement" },
+    "element": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": true,
+      "description": "Native Adaptive Cards element JSON, for example Table, RichTextBlock, ImageSet, FactSet, ActionSet, or any Input.* element."
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -2,6 +2,8 @@ import type {
   Deck, Slide, Tile, Theme, LayoutConfig, Background,
   TextTile, ImageTile, CodeTile, ChartTile, MediaTile, ContainerTile,
   InputTextTile, InputNumberTile, InputChoiceSetTile,
+  InputDateTile, InputTimeTile, InputToggleTile,
+  AdaptiveCardTile, AdaptiveElementTile,
   GridPosition, FreeformPosition,
 } from "./types/index.js";
 
@@ -52,8 +54,8 @@ function freeformStyle(pos: FreeformPosition): string {
     `top: ${pos.y}%`,
     `width: ${pos.width}%`,
     `height: ${pos.height}%`,
-    pos.rotation ? `transform: rotate(${pos.rotation}deg)` : "",
-    pos.zIndex ? `z-index: ${pos.zIndex}` : "",
+    typeof pos.rotation === "number" && pos.rotation !== 0 ? `transform: rotate(${pos.rotation}deg)` : "",
+    typeof pos.zIndex === "number" ? `z-index: ${pos.zIndex}` : "",
   ].filter(Boolean).join("; ");
 }
 
@@ -468,6 +470,233 @@ function renderInputChoiceSetTile(tile: InputChoiceSetTile): string {
   return `<div class="tile tile-input-choiceset">${label}<select name="${id}" id="${id}" ${required} ${multiple} style="${baseStyle}">${placeholder}${opts}</select></div>`;
 }
 
+function renderInputDateTile(tile: InputDateTile): string {
+  const id = esc(tile.id);
+  const label = renderInputLabel(tile.label, tile.isRequired);
+  const placeholder = tile.placeholder ? `placeholder="${esc(tile.placeholder)}"` : "";
+  const required = tile.isRequired ? "required" : "";
+  const min = tile.min ? `min="${esc(tile.min)}"` : "";
+  const max = tile.max ? `max="${esc(tile.max)}"` : "";
+  const value = tile.value ? `value="${esc(tile.value)}"` : "";
+  const baseStyle = "width:100%; padding:8px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; font-family:inherit; font-size:0.9rem; box-sizing:border-box;";
+  return `<div class="tile tile-input-date">${label}<input type="date" name="${id}" id="${id}" ${value} ${placeholder} ${required} ${min} ${max} style="${baseStyle}" /></div>`;
+}
+
+function renderInputTimeTile(tile: InputTimeTile): string {
+  const id = esc(tile.id);
+  const label = renderInputLabel(tile.label, tile.isRequired);
+  const placeholder = tile.placeholder ? `placeholder="${esc(tile.placeholder)}"` : "";
+  const required = tile.isRequired ? "required" : "";
+  const min = tile.min ? `min="${esc(tile.min)}"` : "";
+  const max = tile.max ? `max="${esc(tile.max)}"` : "";
+  const value = tile.value ? `value="${esc(tile.value)}"` : "";
+  const baseStyle = "width:100%; padding:8px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; font-family:inherit; font-size:0.9rem; box-sizing:border-box;";
+  return `<div class="tile tile-input-time">${label}<input type="time" name="${id}" id="${id}" ${value} ${placeholder} ${required} ${min} ${max} style="${baseStyle}" /></div>`;
+}
+
+function renderInputToggleTile(tile: InputToggleTile): string {
+  const id = esc(tile.id);
+  const label = renderInputLabel(tile.label, tile.isRequired);
+  const required = tile.isRequired ? "required" : "";
+  const value = tile.value ?? tile.valueOn ?? "true";
+  const checked = tile.value === (tile.valueOn ?? "true") ? "checked" : "";
+  return `<div class="tile tile-input-toggle">${label}<label for="${id}" style="display:flex; gap:8px; align-items:center; cursor:pointer; font-size:0.9rem;">
+    <input type="checkbox" name="${id}" id="${id}" value="${esc(value)}" ${checked} ${required} />
+    <span>${esc(tile.title)}</span>
+  </label></div>`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function textProp(source: Record<string, unknown>, key: string, fallback = ""): string {
+  const value = source[key];
+  return value == null ? fallback : String(value);
+}
+
+function boolProp(source: Record<string, unknown>, key: string): boolean | undefined {
+  return typeof source[key] === "boolean" ? source[key] : undefined;
+}
+
+function records(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function values(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function renderAdaptiveActions(actions: unknown): string {
+  const buttons = records(actions).map((action) => {
+    const title = esc(textProp(action, "title", textProp(action, "type", "Action")));
+    const type = textProp(action, "type");
+    const url = textProp(action, "url");
+    if (type === "Action.OpenUrl" && url) {
+      return `<a href="${esc(url)}" target="_blank" rel="noreferrer" style="display:inline-block; padding:6px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; text-decoration:none;">${title}</a>`;
+    }
+    return `<button type="button" style="padding:6px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; background:transparent; color:inherit;">${title}</button>`;
+  }).join("");
+  return buttons ? `<div class="adaptive-actions" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">${buttons}</div>` : "";
+}
+
+function renderAdaptiveInline(inline: unknown): string {
+  if (typeof inline === "string") return md(inline);
+  if (!isRecord(inline)) return "";
+  const text = md(textProp(inline, "text"));
+  const weight = inline.weight === "Bolder" ? "font-weight:700;" : inline.weight === "Lighter" ? "font-weight:300;" : "";
+  const italic = inline.italic === true ? "font-style:italic;" : "";
+  const strike = inline.strikethrough === true ? "text-decoration:line-through;" : "";
+  const underline = inline.underline === true ? "text-decoration:underline;" : "";
+  return `<span style="${weight}${italic}${strike}${underline}">${text}</span>`;
+}
+
+function renderAdaptiveElement(element: unknown, theme?: Theme): string {
+  if (!isRecord(element)) return "";
+  const type = textProp(element, "type");
+  switch (type) {
+    case "TextBlock": {
+      const align = textProp(element, "horizontalAlignment", "left").toLowerCase();
+      const weight = element.weight === "Bolder" ? "700" : element.weight === "Lighter" ? "300" : "400";
+      const subtle = boolProp(element, "isSubtle") ? "opacity:0.72;" : "";
+      return `<div class="adaptive-element adaptive-textblock" style="text-align:${esc(align)}; font-weight:${weight}; ${subtle}">${md(textProp(element, "text"))}</div>`;
+    }
+    case "RichTextBlock":
+      return `<div class="adaptive-element adaptive-richtext">${values(element.inlines).map(renderAdaptiveInline).join("")}</div>`;
+    case "Image": {
+      const url = textProp(element, "url");
+      const alt = textProp(element, "altText");
+      return `<div class="adaptive-element adaptive-image"><img src="${esc(url)}" alt="${esc(alt)}" style="max-width:100%; height:auto; border-radius:4px;" /></div>`;
+    }
+    case "Media": {
+      const source = records(element.sources)[0];
+      if (!source) return `<div class="adaptive-element adaptive-media" style="color:#999;">No media source</div>`;
+      const url = textProp(source, "url");
+      const mimeType = textProp(source, "mimeType");
+      const isAudio = mimeType.startsWith("audio/");
+      const poster = element.poster ? `poster="${esc(String(element.poster))}"` : "";
+      const tag = isAudio ? "audio" : "video";
+      return `<${tag} controls ${poster} style="max-width:100%; width:100%; border-radius:4px;"><source src="${esc(url)}"${mimeType ? ` type="${esc(mimeType)}"` : ""} /></${tag}>`;
+    }
+    case "FactSet": {
+      const facts = records(element.facts).map((fact) =>
+        `<div style="display:grid; grid-template-columns:minmax(90px, 35%) 1fr; gap:8px;"><dt style="font-weight:600;">${esc(textProp(fact, "title"))}</dt><dd style="margin:0;">${esc(textProp(fact, "value"))}</dd></div>`
+      ).join("");
+      return `<dl class="adaptive-element adaptive-factset" style="display:flex; flex-direction:column; gap:4px; margin:0;">${facts}</dl>`;
+    }
+    case "Container": {
+      const children = records(element.items).map((item) => renderAdaptiveElement(item, theme)).join("");
+      return `<div class="adaptive-element adaptive-container" style="display:flex; flex-direction:column; gap:8px; padding:8px; border-radius:6px;">${children}</div>`;
+    }
+    case "ColumnSet": {
+      const columns = records(element.columns).map((column) => {
+        const children = records(column.items).map((item) => renderAdaptiveElement(item, theme)).join("");
+        return `<div style="flex:1; display:flex; flex-direction:column; gap:8px;">${children}</div>`;
+      }).join("");
+      return `<div class="adaptive-element adaptive-columnset" style="display:flex; gap:12px;">${columns}</div>`;
+    }
+    case "ImageSet": {
+      const images = records(element.images).map((image) => renderAdaptiveElement(image, theme)).join("");
+      return `<div class="adaptive-element adaptive-imageset" style="display:flex; gap:8px; flex-wrap:wrap;">${images}</div>`;
+    }
+    case "ActionSet":
+      return renderAdaptiveActions(element.actions);
+    case "CodeBlock":
+      return `<pre class="adaptive-element adaptive-codeblock" style="margin:0; padding:8px 12px; overflow:auto; border-radius:6px; background:${theme?.darkMode ? "#1e1e1e" : "#f5f5f5"};"><code>${esc(textProp(element, "codeSnippet"))}</code></pre>`;
+    case "Input.Text":
+      return renderInputTextTile({
+        type: "Tile.Input.Text",
+        id: textProp(element, "id", "input"),
+        label: textProp(element, "label"),
+        placeholder: textProp(element, "placeholder"),
+        value: textProp(element, "value"),
+        isMultiline: boolProp(element, "isMultiline"),
+        maxLength: typeof element.maxLength === "number" ? element.maxLength : undefined,
+      });
+    case "Input.Number":
+      return renderInputNumberTile({
+        type: "Tile.Input.Number",
+        id: textProp(element, "id", "input"),
+        label: textProp(element, "label"),
+        placeholder: textProp(element, "placeholder"),
+        value: typeof element.value === "number" ? element.value : undefined,
+        min: typeof element.min === "number" ? element.min : undefined,
+        max: typeof element.max === "number" ? element.max : undefined,
+      });
+    case "Input.Date":
+      return renderInputDateTile({
+        type: "Tile.Input.Date",
+        id: textProp(element, "id", "input"),
+        label: textProp(element, "label"),
+        placeholder: textProp(element, "placeholder"),
+        value: textProp(element, "value"),
+        min: textProp(element, "min"),
+        max: textProp(element, "max"),
+      });
+    case "Input.Time":
+      return renderInputTimeTile({
+        type: "Tile.Input.Time",
+        id: textProp(element, "id", "input"),
+        label: textProp(element, "label"),
+        placeholder: textProp(element, "placeholder"),
+        value: textProp(element, "value"),
+        min: textProp(element, "min"),
+        max: textProp(element, "max"),
+      });
+    case "Input.Toggle":
+      return renderInputToggleTile({
+        type: "Tile.Input.Toggle",
+        id: textProp(element, "id", "input"),
+        title: textProp(element, "title"),
+        label: textProp(element, "label"),
+        value: textProp(element, "value"),
+        valueOn: textProp(element, "valueOn", "true"),
+        valueOff: textProp(element, "valueOff", "false"),
+        wrap: boolProp(element, "wrap"),
+      });
+    case "Input.ChoiceSet": {
+      const choices = records(element.choices).map((choice) => ({
+        title: textProp(choice, "title"),
+        value: textProp(choice, "value"),
+      }));
+      return renderInputChoiceSetTile({
+        type: "Tile.Input.ChoiceSet",
+        id: textProp(element, "id", "input"),
+        label: textProp(element, "label"),
+        placeholder: textProp(element, "placeholder"),
+        value: textProp(element, "value"),
+        isMultiSelect: boolProp(element, "isMultiSelect"),
+        style: element.style === "expanded" || element.style === "filtered" ? element.style : "compact",
+        wrap: boolProp(element, "wrap"),
+        choices,
+      });
+    }
+    case "Table": {
+      const rows = records(element.rows).map((row) => {
+        const cells = records(row.cells).map((cell) => {
+          const children = records(cell.items).map((item) => renderAdaptiveElement(item, theme)).join("");
+          return `<td style="border:1px solid rgba(128,128,128,0.25); padding:6px; vertical-align:top;">${children}</td>`;
+        }).join("");
+        return `<tr>${cells}</tr>`;
+      }).join("");
+      return `<table class="adaptive-element adaptive-table" style="width:100%; border-collapse:collapse;">${rows}</table>`;
+    }
+    default:
+      return `<pre class="adaptive-element adaptive-json" style="margin:0; padding:8px 12px; overflow:auto; border-radius:6px; background:rgba(128,128,128,0.08);">${esc(JSON.stringify(element, null, 2))}</pre>`;
+  }
+}
+
+function renderAdaptiveElementTile(tile: AdaptiveElementTile, theme?: Theme): string {
+  return `<div class="tile tile-adaptive-element">${renderAdaptiveElement(tile.element, theme)}</div>`;
+}
+
+function renderAdaptiveCardTile(tile: AdaptiveCardTile, theme?: Theme): string {
+  const body = records(tile.card.body).map((element) => renderAdaptiveElement(element, theme)).join("");
+  const actions = renderAdaptiveActions(tile.card.actions);
+  const fallback = body || actions ? "" : `<div style="color:#999;">Empty AdaptiveCard</div>`;
+  return `<section class="tile tile-adaptive-card" style="display:flex; flex-direction:column; gap:8px; padding:12px; border:1px solid rgba(128,128,128,0.2); border-radius:8px;">${body}${actions}${fallback}</section>`;
+}
+
 export function renderTile(tile: Tile, theme?: Theme): string {
   if (tile.isVisible === false) return "";
 
@@ -498,6 +727,11 @@ export function renderTile(tile: Tile, theme?: Theme): string {
     case "Tile.Input.Text":       inner = renderInputTextTile(tile); break;
     case "Tile.Input.Number":     inner = renderInputNumberTile(tile); break;
     case "Tile.Input.ChoiceSet":  inner = renderInputChoiceSetTile(tile); break;
+    case "Tile.Input.Date":       inner = renderInputDateTile(tile); break;
+    case "Tile.Input.Time":       inner = renderInputTimeTile(tile); break;
+    case "Tile.Input.Toggle":     inner = renderInputToggleTile(tile); break;
+    case "Tile.AdaptiveElement":  inner = renderAdaptiveElementTile(tile, theme); break;
+    case "Tile.AdaptiveCard":     inner = renderAdaptiveCardTile(tile, theme); break;
     default:                      inner = `<div class="tile tile-unknown" style="color:#999;">Unknown tile type: ${esc((tile as Tile).type)}</div>`;
   }
 

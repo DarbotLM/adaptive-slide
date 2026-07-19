@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adaptive-slide.dev/schemas/tiles/input-date-tile.schema.json",
+  "title": "Input Date Tile",
+  "description": "A date picker input. Compiles to AC 1.6 Input.Date.",
+  "type": "object",
+  "required": ["type", "id"],
+  "allOf": [{ "$ref": "../tile.schema.json#/$defs/TileBase" }],
+  "properties": {
+    "type": { "const": "Tile.Input.Date" },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique input id - the key under which the value is submitted to the host."
+    },
+    "label": { "type": "string", "description": "Human-readable label rendered above the input." },
+    "placeholder": { "type": "string", "description": "Ghost text shown when empty." },
+    "value": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Initial date value in YYYY-MM-DD format."
+    },
+    "min": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Inclusive lower date bound in YYYY-MM-DD format."
+    },
+    "max": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Inclusive upper date bound in YYYY-MM-DD format."
+    },
+    "isRequired": { "type": "boolean", "default": false },
+    "errorMessage": { "type": "string" }
+  },
+  "unevaluatedProperties": false
+}

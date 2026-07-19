@@ -1,0 +1,164 @@
+{
+  "$schema": "../schemas/deck.schema.json",
+  "type": "AdaptiveDeck",
+  "version": "1.0.0",
+  "metadata": {
+    "title": "Native Adaptive Cards Bridge",
+    "description": "Demonstrates native Adaptive Cards 1.6 elements, actions, inputs, and full-card embedding in Adaptive Slide.",
+    "author": "Adaptive Slide",
+    "language": "en-US",
+    "tags": ["adaptive-cards", "native-bridge"]
+  },
+  "theme": {
+    "name": "Native Bridge",
+    "primaryColor": "#1f2937",
+    "accentColor": "#2563eb",
+    "backgroundColor": "#f8fafc",
+    "darkMode": false
+  },
+  "card": {
+    "fallbackText": "This host cannot render the native Adaptive Cards bridge example.",
+    "speak": "Native Adaptive Cards bridge example",
+    "selectAction": {
+      "type": "Action.OpenUrl",
+      "title": "Adaptive Cards",
+      "url": "https://adaptivecards.io/"
+    }
+  },
+  "slides": [
+    {
+      "type": "AdaptiveSlide",
+      "id": "native-bridge",
+      "title": "Native bridge",
+      "card": {
+        "lang": "en-US",
+        "verticalContentAlignment": "center"
+      },
+      "layout": {
+        "mode": "stack",
+        "gap": "default"
+      },
+      "body": [
+        {
+          "type": "Tile.Text",
+          "text": "Native Adaptive Cards bridge",
+          "style": "heading",
+          "size": "large"
+        },
+        {
+          "type": "Tile.Input.Date",
+          "id": "dueDate",
+          "label": "Due date",
+          "value": "2026-05-06",
+          "min": "2026-01-01",
+          "max": "2026-12-31"
+        },
+        {
+          "type": "Tile.Input.Time",
+          "id": "startTime",
+          "label": "Start time",
+          "value": "14:30",
+          "min": "08:00",
+          "max": "18:00"
+        },
+        {
+          "type": "Tile.Input.Toggle",
+          "id": "confirmed",
+          "title": "I confirm the schedule",
+          "label": "Confirmation",
+          "value": "yes",
+          "valueOn": "yes",
+          "valueOff": "no",
+          "wrap": true
+        },
+        {
+          "type": "Tile.AdaptiveElement",
+          "id": "nativeTable",
+          "element": {
+            "type": "Table",
+            "columns": [
+              { "width": 1 },
+              { "width": 1 }
+            ],
+            "rows": [
+              {
+                "type": "TableRow",
+                "cells": [
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Element",
+                        "weight": "Bolder",
+                        "wrap": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TableCell",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Native Table",
+                        "wrap": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "Tile.AdaptiveCard",
+          "card": {
+            "type": "AdaptiveCard",
+            "version": "1.6",
+            "body": [
+              {
+                "type": "TextBlock",
+                "text": "Embedded native card",
+                "weight": "Bolder",
+                "wrap": true
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  { "title": "Schema", "value": "Adaptive Cards 1.6" },
+                  { "title": "Mode", "value": "Card-in-card bridge" }
+                ]
+              }
+            ],
+            "actions": [
+              {
+                "type": "Action.Execute",
+                "title": "Run native action",
+                "verb": "runNativeBridge",
+                "data": {
+                  "source": "native-adaptive-card.deck.json"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "actions": [
+        {
+          "type": "Action.Execute",
+          "title": "Submit response",
+          "verb": "submitNativeBridge",
+          "associatedInputs": "auto",
+          "data": {
+            "deckId": "native-adaptive-card"
+          }
+        },
+        {
+          "type": "Action.ToggleVisibility",
+          "title": "Toggle table",
+          "targetElements": ["nativeTable"]
+        }
+      ]
+    }
+  ]
+}

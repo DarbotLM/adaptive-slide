@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adaptive-slide.dev/schemas/tiles/input-toggle-tile.schema.json",
+  "title": "Input Toggle Tile",
+  "description": "A boolean toggle input. Compiles to AC 1.6 Input.Toggle.",
+  "type": "object",
+  "required": ["type", "id", "title"],
+  "allOf": [{ "$ref": "../tile.schema.json#/$defs/TileBase" }],
+  "properties": {
+    "type": { "const": "Tile.Input.Toggle" },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique input id - the key under which the value is submitted to the host."
+    },
+    "title": { "type": "string", "description": "Text displayed next to the toggle." },
+    "label": { "type": "string", "description": "Human-readable label rendered above the input." },
+    "value": { "type": "string", "description": "Initial submitted value." },
+    "valueOn": { "type": "string", "default": "true", "description": "Value submitted when selected." },
+    "valueOff": { "type": "string", "default": "false", "description": "Value submitted when not selected." },
+    "wrap": { "type": "boolean", "default": true, "description": "Wrap the toggle title when it exceeds available width." },
+    "isRequired": { "type": "boolean", "default": false },
+    "errorMessage": { "type": "string" }
+  },
+  "unevaluatedProperties": false
+}
