@@ -519,6 +519,15 @@ function boolProp(source: Record<string, unknown>, key: string): boolean | undef
   return typeof source[key] === "boolean" ? source[key] : undefined;
 }
 
+function isSafeActionUrl(url: string): boolean {
+  try {
+    const protocol = new URL(url).protocol.toLowerCase();
+    return protocol === "http:" || protocol === "https:" || protocol === "mailto:";
+  } catch {
+    return false;
+  }
+}
+
 function records(value: unknown): Record<string, unknown>[] {
   return Array.isArray(value) ? value.filter(isRecord) : [];
 }
@@ -532,10 +541,10 @@ function renderAdaptiveActions(actions: unknown): string {
     const title = esc(textProp(action, "title", textProp(action, "type", "Action")));
     const type = textProp(action, "type");
     const url = textProp(action, "url");
-    if (type === "Action.OpenUrl" && url) {
+    if (type === "Action.OpenUrl" && url && isSafeActionUrl(url)) {
       return `<a href="${esc(url)}" target="_blank" rel="noreferrer" style="display:inline-block; padding:6px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; text-decoration:none;">${title}</a>`;
     }
-    return `<button type="button" style="padding:6px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; background:transparent; color:inherit;">${title}</button>`;
+    return `<button type="button" disabled title="Action unavailable in this viewer" style="padding:6px 10px; border:1px solid rgba(128,128,128,0.4); border-radius:4px; background:transparent; color:inherit; opacity:0.65; cursor:not-allowed;">${title}</button>`;
   }).join("");
   return buttons ? `<div class="adaptive-actions" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">${buttons}</div>` : "";
 }

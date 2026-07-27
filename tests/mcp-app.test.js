@@ -112,6 +112,23 @@ describe("Transformer", () => {
     assert.ok(cardHtml.includes("https://example.com/"));
   });
 
+  it("sanitizes native action URLs and disables unsupported actions", () => {
+    const html = renderTile({
+      type: "Tile.AdaptiveCard",
+      card: {
+        type: "AdaptiveCard",
+        body: [],
+        actions: [
+          { type: "Action.OpenUrl", title: "Unsafe", url: "javascript:alert(1)" },
+          { type: "Action.Submit", title: "Submit" },
+        ],
+      },
+    });
+    assert.ok(!html.includes("javascript:"));
+    assert.ok(html.includes('title="Action unavailable in this viewer"'));
+    assert.ok(html.includes("disabled"));
+  });
+
   it("renders the full native input tile set", () => {
     assert.ok(renderTile({ type: "Tile.Input.Date", id: "due", value: "2026-05-06" }).includes("type=\"date\""));
     assert.ok(renderTile({ type: "Tile.Input.Time", id: "time", value: "14:30" }).includes("type=\"time\""));
