@@ -34,6 +34,8 @@ NOTE: Absolute freeform placement is an HTML viewer feature. The Adaptive Cards 
 
 ## Quick Start
 
+Requires Node.js 20.19 or later.
+
 ```bash
 npm install
 npm run validate   # validate example decks against schemas

@@ -1,0 +1,38 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    labels:
+      - dependencies
+    groups:
+      docusaurus:
+        patterns:
+          - "@docusaurus/*"
+          - "@mdx-js/*"
+          - prism-react-renderer
+      react:
+        patterns:
+          - react
+          - react-dom
+      types:
+        patterns:
+          - "@types/*"
+      dev-tooling:
+        patterns:
+          - typescript
+          - tsx
+          - gh-pages
+          - ajv
+          - ajv-formats
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies

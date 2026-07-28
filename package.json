@@ -32,30 +32,46 @@
   ],
   "author": "",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0",
-    "cors": "^2.8.5",
-    "express": "^4.21.0",
-    "zod": "^3.24.0"
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@docusaurus/core": "^3.10.0",
-    "@docusaurus/preset-classic": "^3.10.0",
+    "@docusaurus/core": "^3.10.2",
+    "@docusaurus/preset-classic": "^3.10.2",
     "@mdx-js/react": "^3.1.1",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.0.0",
-    "ajv": "^8.18.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.1",
+    "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "clsx": "^2.1.1",
     "gh-pages": "^6.3.0",
     "prism-react-renderer": "^2.4.1",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
-    "tsx": "^4.19.0",
-    "typescript": "^5.6.0"
+    "react": "^19.3.0-canary-fef12a01-20260413",
+    "react-dom": "^19.3.0-canary-fef12a01-20260413",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
   },
   "overrides": {
-    "webpackbar": "7.0.0"
+    "webpackbar": "7.0.0",
+    "shell-quote": "^1.10.0",
+    "websocket-driver": "^0.7.5",
+    "fast-uri": "^4.1.1",
+    "hono": "^4.12.31",
+    "serialize-javascript": "^7.0.7",
+    "ws": "^8.21.1",
+    "@hono/node-server": "^2.0.11",
+    "express-rate-limit": "^8.6.0",
+    "http-proxy-middleware": "^2.0.10",
+    "ip-address": "^10.2.0",
+    "launch-editor": "^2.14.1",
+    "uuid": "^11.1.1",
+    "webpack-dev-server": "^5.2.6"
   }
 }

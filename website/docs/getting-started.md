@@ -12,8 +12,8 @@ This guide takes a new checkout from install to a locally running MCP App server
 
 | Tool | Version |
 | --- | --- |
-| Node.js | 18 or later |
-| npm | Bundled with Node.js |
+| Node.js | 20.19 or later |
+| npm | 10 or later (bundled with Node.js) |
 | Git | Any current version |
 
 ## Install
@@ -23,6 +23,8 @@ git clone https://github.com/DarbotLM/adaptive-slide.git
 cd adaptive-slide
 npm install
 ```
+
+The repository ships an `.npmrc` that sets `legacy-peer-deps=true`. The documentation site tracks a React 19.3 canary, while Docusaurus and `@mdx-js/react` declare stable-only React peer ranges, so peer resolution is relaxed for both `npm install` and `npm ci`.
 
 ## Validate the example deck
 
