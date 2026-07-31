@@ -1,6 +1,6 @@
 {
   "name": "adaptive-slide",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A schema-driven presentation builder/viewer built on Adaptive Cards with MCP App support",
   "type": "module",
   "main": "dist/index.js",
@@ -73,6 +73,7 @@
     "launch-editor": "^2.14.1",
     "uuid": "^11.1.1",
     "webpack-dev-server": "^5.2.6",
-    "minimatch": "^10.2.5"
+    "minimatch": "^10.2.5",
+    "brace-expansion": "^5.0.8"
   }
 }

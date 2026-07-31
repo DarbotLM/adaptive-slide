@@ -117,6 +117,7 @@ All schemas live in `schemas/` and follow [JSON Schema Draft 2020-12](https://js
 - [Wiki: Schema Reference](docs/wiki/Schema-Reference.md)
 - [Wiki: Getting Started](docs/wiki/Getting-Started.md)
 - [Wiki: MCP App Plugin](docs/wiki/MCP-App-Plugin.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 
