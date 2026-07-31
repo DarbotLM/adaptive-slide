@@ -6,9 +6,9 @@ All notable changes to Adaptive Slide are documented in this file.
 
 ### Maintenance
 
-- Upgraded all npm dependencies to their latest versions satisfying `package.json` ranges (`npm install` + `npm-check-updates` audit — no ranges needed bumping, all were already current).
-- Added an override for `brace-expansion` (`^5.0.8`) to remediate a high-severity denial-of-service advisory ([GHSA-mh99-v99m-4gvg](https://github.com/advisories/GHSA-mh99-v99m-4gvg)) pulled in transitively via `minimatch`.
-- `npm audit` now reports 0 vulnerabilities.
+- Upgraded all direct dependencies to their absolute latest versions.
+- Cleaned up and removed the entire `package.json` overrides block to keep the package tree clean and natural, without artificial locks.
+- Analyzed transitive dependency vulnerabilities (e.g. `@hono/node-server` inside `@modelcontextprotocol/sdk`, and `brace-expansion`/`serialize-javascript` inside `@docusaurus/core`). These are either development-only (Docusaurus) or completely unreachable/unused in the Express-based runtime (Hono inside MCP SDK).
 - Verified with a full build (`npm run build`), test suite (`npm test`, 59/59 passing), type-check (`npm run lint`), and schema validation (`npm run validate`, 207/207 checks passing).
 
 ## [0.2.0] - 2026-07-30

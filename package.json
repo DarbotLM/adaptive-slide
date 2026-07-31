@@ -57,23 +57,5 @@
     "react-dom": "^19.3.0-canary-fef12a01-20260413",
     "tsx": "^4.23.1",
     "typescript": "^7.0.2"
-  },
-  "overrides": {
-    "webpackbar": "7.0.0",
-    "shell-quote": "^1.10.0",
-    "websocket-driver": "^0.7.5",
-    "fast-uri": "^4.1.1",
-    "hono": "^4.12.31",
-    "serialize-javascript": "^7.0.7",
-    "ws": "^8.21.1",
-    "@hono/node-server": "^2.0.11",
-    "express-rate-limit": "^8.6.0",
-    "http-proxy-middleware": "^2.0.10",
-    "ip-address": "^10.2.0",
-    "launch-editor": "^2.14.1",
-    "uuid": "^11.1.1",
-    "webpack-dev-server": "^5.2.6",
-    "minimatch": "^10.2.5",
-    "brace-expansion": "^5.0.8"
   }
 }
