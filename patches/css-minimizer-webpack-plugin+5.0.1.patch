@@ -1,0 +1,13 @@
+diff --git a/node_modules/css-minimizer-webpack-plugin/package.json b/node_modules/css-minimizer-webpack-plugin/package.json
+index 245b90b..7ed62b8 100644
+--- a/node_modules/css-minimizer-webpack-plugin/package.json
++++ b/node_modules/css-minimizer-webpack-plugin/package.json
+@@ -74,7 +74,7 @@
+     "jest-worker": "^29.4.3",
+     "postcss": "^8.4.24",
+     "schema-utils": "^4.0.1",
+-    "serialize-javascript": "^6.0.1"
++    "serialize-javascript": "^7.0.7"
+   },
+   "devDependencies": {
+     "@babel/cli": "^7.21.5",
