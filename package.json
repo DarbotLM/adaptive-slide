@@ -38,10 +38,10 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.1.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@docusaurus/core": "^3.10.2",
@@ -49,7 +49,7 @@
     "@mdx-js/react": "^3.1.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.2.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "clsx": "^2.1.1",
@@ -60,8 +60,8 @@
     "react": "^19.3.0-canary-fef12a01-20260413",
     "react-dom": "^19.3.0-canary-fef12a01-20260413",
     "serialize-javascript": "^7.1.2",
-    "tsx": "^4.23.5",
+    "tsx": "^4.23.11",
     "typescript": "^7.0.2",
-    "uuid": "^11.1.1"
+    "uuid": "^14.0.2"
   }
 }
