@@ -59,7 +59,7 @@
     "prism-react-renderer": "^2.4.1",
     "react": "^19.3.0-canary-fef12a01-20260413",
     "react-dom": "^19.3.0-canary-fef12a01-20260413",
-    "serialize-javascript": "^7.1.2",
+    "serialize-javascript": "^7.1.4",
     "tsx": "^4.23.11",
     "typescript": "^7.0.2",
     "uuid": "^14.0.2"
